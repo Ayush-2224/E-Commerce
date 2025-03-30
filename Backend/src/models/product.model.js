@@ -22,10 +22,12 @@ const productSchema = mongoose.Schema({
         type: [String]
     },
     price: {
-        type: Number  
+        type: Number,
+        min:0  
     },
     mrp: {
-        type: Number  
+        type: Number,
+        min:0  
     },
     description: {
         type: [descriptionElementSchema]
