@@ -1,11 +1,11 @@
 import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv'
-import HttpError from '../models/http-error'
+import HttpError from '../models/http-error.js'
 dotenv.config()
 const generateToken = (userId,res)=>{
     try{
         const token =jwt.sign({
-            userId
+            userId,
         },
         process.env.JWT_SECRET,
         {
