@@ -1,11 +1,10 @@
 import mongoose from 'mongoose'
 import bcrypt from'bcryptjs'
 import HttpError from './http-error.js';
-const userSchema =mongoose.Schema({
+const sellerSchema =mongoose.Schema({
      username:{
         type:String,
         trim: true,
-        index:true 
      },
      password:{
         type:String
@@ -18,6 +17,14 @@ const userSchema =mongoose.Schema({
      profilePic:{
         type:String,
         default:""
+     },
+     rating:{
+        type: Number,
+        default:0
+     },
+     address:{
+        type: String,
+        required:true,
      }
 },{timestamps:true})
 
@@ -35,7 +42,7 @@ userSchema.methods.isPasswordCorrect=async function(password){
    return await bcrypt.compare(password,this.password)
 }
 
-const User= mongoose.model("User",userSchema)
+const Seller= mongoose.model("Seller",sellerSchema)
 
 
-export default User
+export default Seller
