@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 import bcrypt from'bcryptjs'
-import HttpError from './http-error';
+import HttpError from './http-error.js';
 const userSchema =mongoose.Schema({
      username:{
         type:String,
