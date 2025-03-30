@@ -8,7 +8,6 @@ const generateToken = (userId,res)=>{
             userId
         },
         process.env.JWT_SECRET,
-        
         {
             expiresIn:"7d"
         })
