@@ -16,6 +16,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieparser())
 
 app.use("/api/auth",authRoutes)
+app.use((error, req, res, next) =>{
+    if(res.headerSent){
+        return next(error)
+    }
+    res.status(error.code || 500)
+    res.json({message: error.message || "An unknown error occured"})
+})
 
 const PORT=process.env.PORT
 app.listen(PORT,()=>{
