@@ -1,5 +1,17 @@
 import mongoose from "mongoose";
 
+const descriptionElementSchema = mongoose.Schema({
+    type:{
+        type:String,
+        enum: ["text", "image"],
+        required:true
+    },
+    data:{
+        type:String,
+        required: true
+    }
+}, {_id: false})
+
 const productSchema = mongoose.Schema({
     category: {
         type: String,
@@ -15,7 +27,7 @@ const productSchema = mongoose.Schema({
         type: Number  
     },
     description: {
-        type: String
+        type: [descriptionElementSchema]
     },
     specifications: {
         type: String
