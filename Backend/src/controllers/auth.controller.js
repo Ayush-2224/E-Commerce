@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import cloudinary from "../lib/cloudinary.js";
 import generateToken from "../lib/generateTOken.js";
+import HttpError from "../models/http-error.js";
 const signup = async(req,res)=>{
     try {
         const {username,password,email,profilePic}=req.body;
@@ -37,7 +38,7 @@ const signup = async(req,res)=>{
         
     } catch (error) {
         console.log("signup error",error)
-        return res.status(400).json({message:"ise"})
+        return next(new HttpError("ISE", 400))
     }
     
 }
@@ -67,7 +68,7 @@ const logout=async(req,res)=>{
         return res.status(200).json({message:"logout completed successfully"})
     } catch (error) {
         console.log("logout: ", error)
-        return res.status(400).json({message:"ISE"})
+        return next(new HttpError("ISE", 400))
     }
 }
 
