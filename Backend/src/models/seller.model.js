@@ -5,9 +5,12 @@ const sellerSchema =mongoose.Schema({
      username:{
         type:String,
         trim: true,
+        minlength: [3, 'Username must be at least 3 characters long'],
+        required: [true, 'Username is required']
      },
      password:{
-        type:String
+        type:String,
+        minlength: [8, "Password must me of atleast 8 characters"]
      },
      email:{
         type:String,
