@@ -5,7 +5,7 @@ const userSchema =mongoose.Schema({
         type:String,
         lowercase:true,
         trim: true,
-        index:true 
+       
      },
      password:{
         type:String,
