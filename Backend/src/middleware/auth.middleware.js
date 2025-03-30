@@ -13,7 +13,7 @@ const verifyAuthentication= async (req,res,next)=>{
             })
         }
         const user=await User.findById(decoded.userId).select("-password");
-        // const occupation=decoded.occupation
+        
         if(!user){
             return res.status(404).json({message:"user not found"
             })
