@@ -7,10 +7,8 @@ const addProduct = async (req, res, next) => {
         const {
             title,
             category,
-            image,
             price,
             mrp,
-            description,
             specifications,
             quantity
         } = req.body;
@@ -31,41 +29,14 @@ const addProduct = async (req, res, next) => {
 
         // Handle image upload to Cloudinary
         let imageUrl = [];
-        if (image && Array.isArray(image)) {
+        if (req.file) {
             try {
-                imageUrl = await Promise.all(image.map(async (img) => {
-                    const uploadResult = await cloudinary.uploader.upload(img);
-                    return uploadResult.secure_url;
-                }));
-            } catch (error) {
-                console.log("Image upload error:", error);
-                return res.status(400).json({ message: "Failed to upload images" });
-            }
-        } else if (image) {  // Handle a single image if not an array
-            try {
-                const uploadResult = await cloudinary.uploader.upload(image);
+                const uploadResult = await cloudinary.uploader.upload(req.file.path);
                 imageUrl.push(uploadResult.secure_url);
             } catch (error) {
                 console.log("Image upload error:", error);
                 return res.status(400).json({ message: "Failed to upload image" });
             }
-        }
-        
-
-        // Process description elements if provided
-        let processedDescription = [];
-        if (description && Array.isArray(description)) {
-            processedDescription = await Promise.all(description.map(async (element) => {
-                if (element.type === "image" && element.data) {
-                    // Upload image to cloudinary if it's a base64 string
-                    const uploadResult = await cloudinary.uploader.upload(element.data);
-                    return {
-                        type: "image",
-                        data: uploadResult.secure_url
-                    };
-                }
-                return element;
-            }));
         }
 
         // Create new product
@@ -73,12 +44,11 @@ const addProduct = async (req, res, next) => {
             title,
             category,
             imageUrl,
-            price,
-            mrp: mrp || price, // If mrp not provided, use price as mrp
-            description: processedDescription,
+            price: Number(price),
+            mrp: Number(mrp) || Number(price), // If mrp not provided, use price as mrp
             specifications: specifications || "",
             seller,
-            quantity
+            quantity: Number(quantity)
         });
 
         // Save product
@@ -99,4 +69,68 @@ const addProduct = async (req, res, next) => {
     }
 }
 
-export { addProduct };
+const getProductById = async (req,res,next)=>{
+    try {
+        const {id}=req.params
+        const product=await Product.findById(id)
+        if(!product){
+            return next(new HttpError("Product not found",404))
+        }
+        return res.status(200).json({product})
+    } catch (error) {
+        
+    }
+}
+const getProductsByCategory = async (req,res,next)=>{
+    try {
+        const {category}=req.params
+        const products=await Product.find({category})
+        if(!products){
+            return next(new HttpError("Products not found",404))
+        }
+        return res.status(200).json({products})
+    } catch (error) {
+        
+    }
+}
+
+const editProduct = async (req,res,next)=>{
+    try {
+        const {id}=req.params
+        const {price,quantity}=req.body
+        const product=await Product.findByIdAndUpdate(id,{title,category,price,mrp,specifications,quantity})
+        if(!product){
+            return next(new HttpError("Product not found",404))
+        }
+        return res.status(200).json({product})
+    } catch (error) {
+        
+    }
+}
+
+// const deleteProduct = async (req,res,next)=>{
+//     try {
+//         const {id}=req.params
+//         const product=await Product.findByIdAndDelete(id)
+//         if(!product){
+//             return next(new HttpError("Product not found",404))
+//         }
+//         return res.status(200).json({message:"Product deleted successfully"})
+//     } catch (error) {
+//         return next(new HttpError("Internal Server Error",500))
+//     }
+// }
+
+const getProductsBySeller = async (req,res,next)=>{
+    try {
+        const seller=req.sellerData._id
+        const products=await Product.find({seller})
+        if(!products){
+            return next(new HttpError("Products not found",404))
+        }
+        return res.status(200).json({products})
+    } catch (error) {
+        return next(new HttpError("Internal Server Error",500))
+    }
+}   
+export { addProduct, getProductById, getProductsByCategory, editProduct, getProductsBySeller };
