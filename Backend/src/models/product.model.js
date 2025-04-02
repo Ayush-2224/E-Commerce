@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-
 const descriptionElementSchema = mongoose.Schema({
     type:{
         type:String,
