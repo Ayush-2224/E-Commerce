@@ -8,7 +8,7 @@ const signup = async(req,res)=>{
         if([email,username,password].some((field)=>
                 field?.trim()==="")
            ){
-            return res.status(401).json({message:`{field} is required`});
+            return res.status(401).json({message:`${field} is required`});
            }
 
         const user=await User.findOne({email});
@@ -38,7 +38,7 @@ const signup = async(req,res)=>{
         
     } catch (error) {
         console.log("signup error",error)
-        return next(new HttpError("ISE", 400))
+        return res.status(400).json({message:"ise"})
     }
     
 }
