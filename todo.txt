@@ -1,3 +1,5 @@
 Seller User Secret key handel
 Brand add in product
 Profile edit  in auth and Seller
+in model check price<=mrp
+image in add product
