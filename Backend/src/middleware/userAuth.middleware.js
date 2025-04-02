@@ -1,6 +1,6 @@
 import User from '../models/user.model.js'
 import jwt from 'jsonwebtoken'
-const verifyAuthentication= async (req,res,next)=>{
+const verifyUserAuthentication= async (req,res,next)=>{
     try {
         const token =req.cookies.jwt
         if(!token){
@@ -27,4 +27,4 @@ const verifyAuthentication= async (req,res,next)=>{
     }
 }
 
-export default verifyAuthentication;
+export default verifyUserAuthentication;
