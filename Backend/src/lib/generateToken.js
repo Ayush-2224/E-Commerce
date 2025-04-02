@@ -16,7 +16,7 @@ const generateToken = (userId,res)=>{
         httpOnly: true,
         sameSite:"strict",
     })
-    
+
     return token
 }catch(error){
     console.log("Error generating token", error);

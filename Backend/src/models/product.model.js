@@ -45,7 +45,7 @@ const productSchema = mongoose.Schema({
         required: true
     },
     quantity: {
-        type: Number  
+        type: Number
     }
 });
 
