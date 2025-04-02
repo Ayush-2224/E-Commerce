@@ -26,3 +26,5 @@ const verifyAuthentication= async (req,res,next)=>{
         return res.status(400).json({message:"ISE"})
     }
 }
+
+export default verifyAuthentication;
