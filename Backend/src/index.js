@@ -4,6 +4,7 @@ import cors from 'cors'
 import connectDb from './lib/db.js'
 import userAuthRoutes from './routes/userAuth.router.js'
 import sellerAuthRoutes from './routes/sellerAuth.router.js'
+import productRoutes from './routes/product.router.js'
 const app =express();
 
 import dotenv from 'dotenv';
@@ -16,8 +17,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true })); 
 app.use(cookieparser())
 
-app.use("/api/auth",userAuthRoutes)
+app.use("/api/user",userAuthRoutes)
 app.use("/api/seller",sellerAuthRoutes)
+app.use("/api/product",productRoutes)
 app.use((error, req, res, next) =>{
     if(res.headerSent){
         return next(error)

@@ -13,6 +13,10 @@ const descriptionElementSchema = mongoose.Schema({
 }, {_id: false})
 
 const productSchema = mongoose.Schema({
+    title: {
+        type: String,
+        required: true
+    },
     category: {
         type: String,
         enum: ["Electronics", "Appliances", "Mobiles", "Toys", "Books", "Food", "Furniture", "Medicines"],
@@ -36,7 +40,9 @@ const productSchema = mongoose.Schema({
         type: String
     },
     seller: {
-        type: String
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Seller",
+        required: true
     },
     quantity: {
         type: Number  
