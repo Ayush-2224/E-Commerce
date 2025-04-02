@@ -31,7 +31,17 @@ const addProduct = async (req, res, next) => {
 
         // Handle image upload to Cloudinary
         let imageUrl = [];
-        if (image) {
+        if (image && Array.isArray(image)) {
+            try {
+                imageUrl = await Promise.all(image.map(async (img) => {
+                    const uploadResult = await cloudinary.uploader.upload(img);
+                    return uploadResult.secure_url;
+                }));
+            } catch (error) {
+                console.log("Image upload error:", error);
+                return res.status(400).json({ message: "Failed to upload images" });
+            }
+        } else if (image) {  // Handle a single image if not an array
             try {
                 const uploadResult = await cloudinary.uploader.upload(image);
                 imageUrl.push(uploadResult.secure_url);
@@ -40,6 +50,7 @@ const addProduct = async (req, res, next) => {
                 return res.status(400).json({ message: "Failed to upload image" });
             }
         }
+        
 
         // Process description elements if provided
         let processedDescription = [];
