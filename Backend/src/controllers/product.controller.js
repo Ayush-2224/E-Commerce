@@ -78,9 +78,11 @@ const getProductById = async (req,res,next)=>{
         }
         return res.status(200).json({product})
     } catch (error) {
-        
+        return next(new HttpError("Internal Server Error",500))
     }
 }
+
+// change to filter
 const getProductsByCategory = async (req,res,next)=>{
     try {
         const {category}=req.params
@@ -90,7 +92,7 @@ const getProductsByCategory = async (req,res,next)=>{
         }
         return res.status(200).json({products})
     } catch (error) {
-        
+        return next(new HttpError("Internal Server Error",500))
     }
 }
 
@@ -98,13 +100,18 @@ const editProduct = async (req,res,next)=>{
     try {
         const {id}=req.params
         const {price,quantity}=req.body
-        const product=await Product.findByIdAndUpdate(id,{title,category,price,mrp,specifications,quantity})
+        const product = await Product.findByIdAndUpdate(
+            id,
+            { price, quantity },
+            { new: true, runValidators: true }
+          );
+          
         if(!product){
             return next(new HttpError("Product not found",404))
         }
         return res.status(200).json({product})
     } catch (error) {
-        
+        return next(new HttpError("Internal Server Error",500))
     }
 }
 
@@ -133,4 +140,6 @@ const getProductsBySeller = async (req,res,next)=>{
         return next(new HttpError("Internal Server Error",500))
     }
 }   
+
+
 export { addProduct, getProductById, getProductsByCategory, editProduct, getProductsBySeller };
