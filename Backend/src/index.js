@@ -5,6 +5,11 @@ import connectDb from './lib/db.js'
 import userAuthRoutes from './routes/userAuth.router.js'
 import sellerAuthRoutes from './routes/sellerAuth.router.js'
 import productRoutes from './routes/product.router.js'
+import orderRoutes from './routes/order.router.js'
+import paymentRoutes from './routes/payment.router.js'
+import cartRoutes from './routes/cart.router.js'
+import reviewRoutes from './routes/review.router.js'
+
 const app =express();
 
 import dotenv from 'dotenv';
@@ -20,6 +25,11 @@ app.use(cookieparser())
 app.use("/api/user",userAuthRoutes)
 app.use("/api/seller",sellerAuthRoutes)
 app.use("/api/product",productRoutes)
+app.use("/api/order",orderRoutes)
+app.use("/api/payment",paymentRoutes)
+app.use("/api/cart",cartRoutes)
+app.use("/api/review",reviewRoutes)
+
 app.use((error, req, res, next) =>{
     if(res.headerSent){
         return next(error)

@@ -1,4 +1,4 @@
-import Payment from '../models/payment.model.js';
+import Payment from '../models/Payment.model.js';
 import Order from "../models/order.model.js"
 import HttpError from '../models/http-error.js'
 const createPayment = async (req, res, next) => {

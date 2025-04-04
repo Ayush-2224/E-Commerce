@@ -45,6 +45,10 @@ const productSchema = mongoose.Schema({
     },
     quantity: {
         type: Number
+    },
+    rating:{
+        type:Number,
+        default:0
     }
 });
 
