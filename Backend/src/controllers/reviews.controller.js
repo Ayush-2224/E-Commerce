@@ -71,4 +71,4 @@ const getUserReviews = async (req, res, next) => {
 };
 
 
-export {addReview, getReviews, changeReview, deleteReview}
+export {addReview, getReviews, changeReview, deleteReview, getReviews}
