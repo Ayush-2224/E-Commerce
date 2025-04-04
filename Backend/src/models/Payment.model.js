@@ -1,6 +1,11 @@
 import mongoose from "mongoose";
 
 const PaymentSchema = mongoose.Schema({
+    type:{
+        type: String,
+        enum: ["Receive, Refund"],
+        required: true
+    },
     userId:{
         type:mongoose.Schema.ObjectId,
         ref:"User",
