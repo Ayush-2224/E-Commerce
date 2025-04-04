@@ -1,9 +1,22 @@
 import mongoose from "mongoose";
 
+const productEntrySchema = mongoose.Schema({
+    productId:{
+        type: mongoose.Schema.ObjectId,
+        ref: "Product",
+        required: true
+    },
+    quantity:{
+        type: Number,
+        required: true,
+        min: 1
+    }
+}, {_id: false})
+
 const cartSchema = mongoose.Schema({
     products:{
-        type: [mongoose.Schema.ObjectId],
-        ref: "Product"
+        type: [productEntrySchema],
+        default: []
     },
     userId:{
         type: mongoose.Schema.ObjectId,
