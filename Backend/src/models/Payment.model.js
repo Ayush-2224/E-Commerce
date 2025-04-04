@@ -6,7 +6,7 @@ const PaymentSchema = mongoose.Schema({
         ref:"User",
         required:true,
     },
-    productId:{
+    orderId:{
         type:[mongoose.Schema.ObjectId],
         ref:"Product",
         required:true,
