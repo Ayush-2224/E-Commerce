@@ -43,7 +43,7 @@ const createOrderbyCartId = async (req, res, next) => {
             })
             await order.save();
         })
-        res.status(201).json({message: "Orders created successfully", orders});
+        res.status(201).json({message: "Orders created successfully"});
     }
     catch(error){
         return next(new HttpError("Failed to create order", 500));
