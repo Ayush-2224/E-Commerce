@@ -1,8 +1,7 @@
 import express from 'express';
 import multer from 'multer';
-import { addProduct } from '../controllers/product.controller.js';
+import { addProduct, getProductById, getProductsByCategory, getProductsBySeller ,editProduct} from '../controllers/product.controller.js';
 import verifySellerAuthentication from '../middleware/sellerAuth.middleware.js';
-import { getProductById, getProductsByCategory } from '../controllers/product.controller.js';
 
 
 const router = express.Router();
@@ -23,5 +22,7 @@ const upload = multer({ storage: storage });
 router.post('/addProduct', verifySellerAuthentication, upload.single('image'), addProduct);
 router.get('/getProduct/:id',getProductById)
 router.get('/filterProducts/:category',getProductsByCategory)
+router.put('/editProduct/:id',verifySellerAuthentication,editProduct)
+router.get('/getProductsBySeller',verifySellerAuthentication,getProductsBySeller)
 
 export default router; 
