@@ -17,7 +17,7 @@ const createPayment = async (req, res, next) => {
             userId,
             orderId,
             amount,
-            transactionId
+            transactionId 
         })
 
         await newPayment.save()

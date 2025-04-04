@@ -22,14 +22,16 @@ const orderSchema = mongoose.Schema(
         },
         paymentStatus:{
             type:String,
-            enum:["Not Paid","Paid","Cancelled"],
+            enum:["Not Paid","Paid","Cancelled","Refunded"],
             required:true,
             default:"Not Paid"
 
         },
-        transactionId:{
-            type:mongoose.Schema.ObjectId,
-            ref:"Payment",
+        orderStatus:{
+            type:String,
+            enum:["Order Placed","Order Shipped","Order Delivered","Order Cancelled"],
+            required:true,
+            default:"Order Placed"
         },
         userId:{
             type:mongoose.Schema.ObjectId,
