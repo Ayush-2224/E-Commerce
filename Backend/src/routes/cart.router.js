@@ -1,0 +1,10 @@
+import {Router} from "express"
+import { addProductToCart, changeQuantityFromCart, getCart, removeProductFromCart } from "../controllers/cart.controller";
+import verifyUserAuthentication from "../middleware/userAuth.middleware";
+
+const router = Router();
+
+router.post("/addProduct/:productId", verifyUserAuthentication,addProductToCart)
+router.post("/getCart",  verifyUserAuthentication,getCart)
+router.delete("/remove/:productId",  verifyUserAuthentication,removeProductFromCart)
+router.post("/modifyQty/:productId",  verifyUserAuthentication,changeQuantityFromCart)
