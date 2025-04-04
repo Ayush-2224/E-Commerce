@@ -12,6 +12,7 @@ const addReview = async (req, res, next) => {
             userId
         });
         await newReview.save();
+        res.status(201).json({message: "Review added successfully"});
     }catch(error){
         console.log("add review error: ", error);
         return next(new HttpError("An error occurred while adding the review", 500));
@@ -26,13 +27,15 @@ const getReviews = async (req, res, next) =>{
                         .select("review rating userId - _id");
         res.json(reviews)
     }catch(error){
-        print(error);
+        console.log("get reviews error: ", error);
+        return next(new HttpError("An error occurred while getting the reviews", 500));
     }
 }
 
 const changeReview = async (req, res, next) => {
     try{
-        const {review, rating, productId} = req.body;
+        const {review, rating} = req.body;
+        const {productId} = req.params;
         const {userId} = req.userData._id;
         const updatedReview = await Review.findOneAndUpdate({productId, userId}, {
             review,
@@ -71,4 +74,4 @@ const getUserReviews = async (req, res, next) => {
 };
 
 
-export {addReview, getReviews, changeReview, deleteReview, getReviews}
+export {addReview, getReviews, changeReview, deleteReview, getUserReviews, getReviews}
