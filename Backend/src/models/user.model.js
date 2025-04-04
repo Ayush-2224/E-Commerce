@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
 import bcrypt from'bcryptjs'
 import HttpError from './http-error.js';
+import Cart from './cart.model.js';
 const userSchema =mongoose.Schema({
      username:{
         type:String,
@@ -32,6 +33,11 @@ userSchema.pre("save", async function(next) {
        next(new HttpError("An error occured", 500));
    }
 });
+
+userSchema.post("create", async function(next){
+    const cart = await Cart.create({userId: this._id});
+    next();
+})
 
 userSchema.methods.isPasswordCorrect=async function(password){
    return await bcrypt.compare(password,this.password)
