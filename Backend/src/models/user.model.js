@@ -30,14 +30,26 @@ userSchema.pre("save", async function(next) {
        this.password = await bcrypt.hash(this.password, 10);
        next();
    } catch (err) {
-       next(new HttpError("An error occured", 500));
+      //  next(new HttpError("An error occured", 500));
+      console.log("An error occured", err);
    }
 });
 
-userSchema.post("create", async function(next){
-    const cart = await Cart.create({userId: this._id});
-    next();
-})
+userSchema.pre("save", async function(next) {
+   if (!this.isNew) {
+      console.log("User already exists");
+      return next();
+   }
+
+   try {
+       await Cart.create({ userId: this._id });
+       console.log("Cart created");
+       next();
+   } catch (err) {
+       next(new HttpError("Failed to create cart", 500));
+       console.log("Failed to create cart", err);
+   }
+});
 
 userSchema.methods.isPasswordCorrect=async function(password){
    return await bcrypt.compare(password,this.password)

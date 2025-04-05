@@ -3,3 +3,7 @@ Brand add in product
 Profile edit  in auth and Seller
 in model check price<=mrp
 image in add product
+quantity check available before adiing anywhere
+decrease quantity when purchased
+google login
+forgot password handle

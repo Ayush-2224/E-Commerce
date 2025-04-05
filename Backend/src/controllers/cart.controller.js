@@ -58,6 +58,11 @@ const changeQuantityFromCart =async(req,res,next)=>{
         const product = cart.products.find(
             (element) => element.productId.toString() === productId
           );
+          if(!product){
+            return next(new HttpError("Product not found", 404));
+          }
+          product.quantity=quantity;
+          await cart.save();
         res.status(200).json({message: "Product quantity changed", cart});
     } catch (error) {
         return next(new HttpError("Failed to change quantity of  product ", 500));
