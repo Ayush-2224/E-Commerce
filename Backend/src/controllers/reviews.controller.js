@@ -1,5 +1,5 @@
-import Review from '../models/review.model.js';
-import HttpError from '../models/http-error';
+import Review from '../models/reviews.model.js';
+import HttpError from '../models/http-error.js';
 
 const addReview = async (req, res, next) => {
     try{

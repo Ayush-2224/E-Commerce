@@ -1,6 +1,6 @@
 import Order from "../models/order.model.js";
 import Cart from "../models/cart.model.js";
-import HttpError from "../utils/http-error.js";
+import HttpError from "../models/http-error.js";
 import Product from "../models/product.model.js";
 
 const createOrderbyProductId = async (req, res, next) => {
