@@ -3,7 +3,8 @@ import HttpError from '../models/http-error.js';
 
 const addReview = async (req, res, next) => {
     try{
-        const {review, rating, productId} = req.body;
+        const {review, rating} = req.body;
+        const {productId} = req.params;
         const {userId} = req.userData._id;
         const newReview = new Review({
             review,
