@@ -15,6 +15,11 @@ const orderSchema = mongoose.Schema(
             type:Number,
             required:true
         },
+        userId:{
+            type:mongoose.Schema.ObjectId,
+            ref:"User",
+            required:true
+        },
         paymentStatus:{
             type:String,
             enum:["Not Paid","Paid","Cancelled","Refunded"],
@@ -27,11 +32,6 @@ const orderSchema = mongoose.Schema(
             enum:["Order Placed","Order Shipped","Order Delivered","Order Cancelled"],
             required:true,
             default:"Order Placed"
-        },
-        userId:{
-            type:mongoose.Schema.ObjectId,
-            ref:"User",
-            required:true
         }
     },{timestamps:true}
 )

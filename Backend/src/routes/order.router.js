@@ -4,9 +4,9 @@ import verifyUserAuthentication from '../middleware/userAuth.middleware.js'
 const router = Router()
 
 router.post('/cobpi/:productId', verifyUserAuthentication, createOrderbyProductId)
-router.post('/cobci/:cartId', verifyUserAuthentication, createOrderbyCartId)
+router.get('/cobci', verifyUserAuthentication, createOrderbyCartId)
 router.get('/getOrders', verifyUserAuthentication, getOrders)
-router.delete('/cancelOrder/:orderId', verifyUserAuthentication, cancelOrder)
+router.post('/cancelOrder/:orderId', verifyUserAuthentication, cancelOrder)
 
 export default router
 
