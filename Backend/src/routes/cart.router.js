@@ -8,3 +8,5 @@ router.post("/addProduct/:productId", verifyUserAuthentication,addProductToCart)
 router.post("/getCart",  verifyUserAuthentication,getCart)
 router.delete("/remove/:productId",  verifyUserAuthentication,removeProductFromCart)
 router.post("/modifyQty/:productId",  verifyUserAuthentication,changeQuantityFromCart)
+
+export default router

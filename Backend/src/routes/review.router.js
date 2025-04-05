@@ -9,3 +9,5 @@ router.get("/get/:productId:/:sortBy/:num", getReviews)
 router.post("/change/:productId", verifyUserAuthentication, changeReview)
 router.delete("delete/:productId", verifyUserAuthentication, deleteReview)
 router.get("/getReviews", verifyUserAuthentication, getUserReviews)
+
+export default router
