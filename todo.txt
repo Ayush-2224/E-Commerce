@@ -7,3 +7,4 @@ quantity check available before adiing anywhere
 decrease quantity when purchased
 google login
 forgot password handle
+payment implement
