@@ -1,5 +1,5 @@
 import Cart from "../models/cart.model.js";
-import HttpError from "../utils/HttpError.js";
+import HttpError from "../models/http-error.js";
 import {productEntrySchema} from "../models/cart.model.js";
 const addProductToCart = async (req, res, next) => {
     const {quantity} = req.body;
