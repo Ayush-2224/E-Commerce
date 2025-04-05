@@ -6,12 +6,11 @@ import Product from "../models/product.model.js";
 const createOrderbyProductId = async (req, res, next) => {
     const {userId} = req.userData._id;
     const {productId} = req.params;
-    const {quantity, price, mrp} = req.body;
+    const { price, mrp} = req.body;
     try {
         const order = new Order({
             userId,
             productId,
-            quantity,
             price,
             mrp
         })

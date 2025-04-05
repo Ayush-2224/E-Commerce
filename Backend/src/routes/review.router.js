@@ -5,9 +5,9 @@ import { addReview, changeReview, deleteReview, getReviews, getUserReviews } fro
 const router = Router()
 
 router.post("/add/:productId", verifyUserAuthentication, addReview)
-router.get("/get/:productId:/:sortBy/:num", getReviews)
+router.get("/get/:productId/:sortBy/:num", getReviews)
 router.post("/change/:productId", verifyUserAuthentication, changeReview)
-router.delete("delete/:productId", verifyUserAuthentication, deleteReview)
+router.delete("/delete/:productId", verifyUserAuthentication, deleteReview)
 router.get("/getReviews", verifyUserAuthentication, getUserReviews)
 
 export default router

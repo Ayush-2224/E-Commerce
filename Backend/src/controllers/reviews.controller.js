@@ -5,7 +5,7 @@ const addReview = async (req, res, next) => {
     try{
         const {review, rating} = req.body;
         const {productId} = req.params;
-        const {userId} = req.userData._id;
+        const userId = req.userData._id;
         const newReview = new Review({
             review,
             rating,
@@ -22,10 +22,11 @@ const addReview = async (req, res, next) => {
 const getReviews = async (req, res, next) =>{
     try{
         const {productId, sortBy, num} = req.params;
+        const sortOrder = parseInt(num, 10);
         const reviews = await Review.find({productId})
-                        .sort({[sortBy]: num})
+                        .sort({[sortBy]: sortOrder})
                         .populate("userId", "username profilePic")
-                        .select("review rating userId - _id");
+                        .select("review rating userId -_id");
         res.json(reviews)
     }catch(error){
         console.log("get reviews error: ", error);
@@ -64,10 +65,9 @@ const deleteReview = async (req, res, next) =>{
 const getUserReviews = async (req, res, next) => {
     const userId = req.userData._id;
     try {
-        const reviews = await Review.find({ userId })
-            .select("productId rating review - _id"); 
-        
-        res.json(reviews);
+        const reviews = await Review.find({userId})
+            .select("-_id"); 
+        res.status(201).json(reviews);
     } catch (error) {
         console.log("get user reviews error: ", error);
         return next(new HttpError("An error occurred while getting the user reviews", 500));
