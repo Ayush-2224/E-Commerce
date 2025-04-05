@@ -3,7 +3,7 @@ import cloudinary from "../lib/cloudinary.js";
 import generateToken from "../lib/generateTOken.js";
 import HttpError from "../models/http-error.js";
 
-const signup = async(req,res)=>{
+const signup = async(req,res,next)=>{
     try {
         const {username, password, email, profilePic, address} = req.body;
         if([email, username, password, address].some((field) =>
@@ -47,7 +47,7 @@ const signup = async(req,res)=>{
     }
 }
 
-const login = async(req,res)=>{
+const login = async(req,res,next)=>{
     const {email, password} = req.body;
     if(!email || email.trim() === "") return res.status(400).json({message: "Email is required"});
     if(!password || password.trim() === "") return res.status(400).json({message: "Password is required"});
@@ -71,7 +71,7 @@ const login = async(req,res)=>{
     });
 }
 
-const logout = async(req,res)=>{
+const logout = async(req,res,next)=>{
     try {
         res.cookie("jwt", "", {maxAge: 0});
         return res.status(200).json({message: "logout completed successfully"});
