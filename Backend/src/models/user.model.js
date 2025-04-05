@@ -30,8 +30,7 @@ userSchema.pre("save", async function(next) {
        this.password = await bcrypt.hash(this.password, 10);
        next();
    } catch (err) {
-      //  next(new HttpError("An error occured", 500));
-      console.log("An error occured", err);
+       next(new HttpError("Failed to hash password", 500));
    }
 });
 
@@ -47,7 +46,6 @@ userSchema.pre("save", async function(next) {
        next();
    } catch (err) {
        next(new HttpError("Failed to create cart", 500));
-       console.log("Failed to create cart", err);
    }
 });
 

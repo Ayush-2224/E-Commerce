@@ -1,6 +1,7 @@
-import Cart from "../models/cart.model.js";
-import HttpError from "../models/http-error.js";
-import {productEntrySchema} from "../models/cart.model.js";
+import Cart, { productEntrySchema } from '../models/cart.model.js';
+import HttpError from '../models/http-error.js';
+import Product from '../models/product.model.js';
+
 const addProductToCart = async (req, res, next) => {
     const {quantity} = req.body;
     const {productId} = req.params;
@@ -10,11 +11,17 @@ const addProductToCart = async (req, res, next) => {
         if(!cart){
             return next(new HttpError("Cart not found", 404));
         }
-        
-        const productEntry = new productEntrySchema({
+        const product = await Product.findById(productId);
+        if(!product){
+            return next(new HttpError("Product not found", 404));
+        }
+        if(product.quantity<quantity){
+            return next(new HttpError("Quantity not available", 404));
+        }
+        const productEntry = {
             productId,
             quantity
-        })
+        };
         cart.products.push(productEntry);
         await cart.save();
         res.status(200).json({message: "Product added to cart", cart});        
