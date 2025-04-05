@@ -5,7 +5,7 @@ import verifyUserAuthentication from "../middleware/userAuth.middleware.js";
 const router = Router();
 
 router.post("/addProduct/:productId", verifyUserAuthentication,addProductToCart)
-router.post("/getCart",  verifyUserAuthentication,getCart)
+router.get("/getCart",  verifyUserAuthentication,getCart)
 router.delete("/remove/:productId",  verifyUserAuthentication,removeProductFromCart)
 router.put("/modifyQty/:productId",  verifyUserAuthentication,changeQuantityFromCart)
 
