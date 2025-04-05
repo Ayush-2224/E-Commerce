@@ -25,4 +25,4 @@ router.get('/filterProducts/:category',getProductsByCategory)
 router.put('/editProduct/:id',verifySellerAuthentication,editProduct)
 router.get('/getProductsBySeller',verifySellerAuthentication,getProductsBySeller)
 
-export default router; 
+export default router;

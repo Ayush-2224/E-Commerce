@@ -2,12 +2,12 @@ import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv'
 import HttpError from '../models/http-error.js'
 dotenv.config()
-const generateToken = (userId,res)=>{
+const generateTokenUser = (userId,res)=>{
     try{
         const token =jwt.sign({
             userId,
         },
-        process.env.JWT_SECRET,
+        process.env.JWT_SECRET_USER,
         {
             expiresIn:"7d"
         })
@@ -24,4 +24,4 @@ const generateToken = (userId,res)=>{
 }
 }
 
-export default generateToken
+export default generateTokenUser

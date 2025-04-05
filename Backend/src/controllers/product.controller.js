@@ -5,6 +5,7 @@ import cloudinary from '../lib/cloudinary.js'
 const addProduct = async (req, res, next) => {
     try {
         const {
+            brand,
             title,
             category,
             price,
@@ -41,6 +42,7 @@ const addProduct = async (req, res, next) => {
 
         // Create new product
         const newProduct = new Product({
+            brand,
             title,
             category,
             imageUrl,
@@ -99,9 +101,10 @@ const getProductsByCategory = async (req,res,next)=>{
 const editProduct = async (req,res,next)=>{
     try {
         const {id}=req.params
+        const seller=req.sellerData._id
         const {price,quantity}=req.body
-        const product = await Product.findByIdAndUpdate(
-            id,
+        const product = await Product.findOneAndUpdate(
+            {_id: id, seller},
             { price, quantity },
             { new: true, runValidators: true }
           );

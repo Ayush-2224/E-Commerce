@@ -8,7 +8,7 @@ const verifySellerAuthentication = async (req,res,next)=>{
             return res.status(401).json({message:"Unauthorized Token not found"
             })
         }
-        const decoded = jwt.verify(token,process.env.JWT_SECRET)
+        const decoded = jwt.verify(token,process.env.JWT_SECRET_SELLER)
         if(!decoded){
             return res.status(401).json({message:"Invalid token"
             })

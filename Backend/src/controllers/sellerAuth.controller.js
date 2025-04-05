@@ -1,7 +1,7 @@
 import Seller from "../models/seller.model.js";
 import cloudinary from "../lib/cloudinary.js";
-import generateToken from "../lib/generateTOken.js";
 import HttpError from "../models/http-error.js";
+import generateTokenSeller from "../lib/seller.generateToken.js";
 
 const signup = async(req,res,next)=>{
     try {
@@ -31,7 +31,7 @@ const signup = async(req,res,next)=>{
         await newSeller.save();
         
         // generate token
-        generateToken(newSeller._id, res);
+        generateTokenSeller(newSeller._id, res);
         return res.status(200).json({
             _id: newSeller._id,
             username: newSeller.username,

@@ -7,7 +7,7 @@ const verifyUserAuthentication= async (req,res,next)=>{
             return res.status(401).json({message:"Unathourised Token not found"
             })
         }
-        const decoded=jwt.verify(token,process.env.JWT_SECRET)
+        const decoded=jwt.verify(token,process.env.JWT_SECRET_USER)
         if(!decoded){
             return res.status(401).json({message:"Invalid token"
             })

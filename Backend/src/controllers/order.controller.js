@@ -16,12 +16,17 @@ const createOrderbyProductId = async (req, res, next) => {
     const {price, mrp} = product;
     
     try {
+        if(product.quantity === 0){
+            return next(new HttpError("Product is not available", 400))
+        }
         const order = new Order({
             productId,
             price,
             mrp,
             userId
         })
+        product.quantity-= 1;
+        await product.save();
         await order.save();
         // order.orderStatus = "Order Placed";
         res.status(201).json({message: "Order created successfully", order});
@@ -35,43 +40,55 @@ const createOrderbyProductId = async (req, res, next) => {
 
 const createOrderbyCartId = async (req, res, next) => {
     const userId = req.userData._id;
-    console.log(userId);
+    // console.log(userId);
     
     const session = await mongoose.startSession();
     session.startTransaction();
+    
     try {
-        const cart = await Cart.findOne({userId});
-        if(!cart){
+        const cart = await Cart.findOne({ userId }).session(session);
+        if (!cart) {
             await session.abortTransaction();
             return next(new HttpError("Cart not found", 404));
         }
-        console.log(cart)
-        for (const product of cart.products) {
-        console.log(product);
+
+        for (const cartItem of cart.products) {
+            const product = await Product.findById(cartItem.productId).session(session);
+            if (!product) {
+                await session.abortTransaction();
+                return next(new HttpError("Product not found", 404));
+            }
             
-            const {price,mrp} = await Product.findById(product.productId);
-            for(let i=0;i<product.quantity;i++){
+            if (product.quantity < cartItem.quantity) {
+                await session.abortTransaction();
+                return next(new HttpError("Product unavailable", 400));
+            }
+            
+            for (let i = 0; i < cartItem.quantity; i++) {
                 const order = new Order({
-                    productId: product.productId,
-                    price,
-                    mrp,    
+                    productId: cartItem.productId,
+                    price: product.price,
+                    mrp: product.mrp,    
                     userId
                 });
-                console.log(order);
                 await order.save({ session });
             }
+            
+            product.quantity -= cartItem.quantity;
+            await product.save({ session });
         }
 
         await session.commitTransaction();
-        res.status(201).json({message: "Orders created successfully"});
-    }
-    catch(error){
+        res.status(201).json({ message: "Orders created successfully" });
+    } catch (error) {
         await session.abortTransaction();
+        console.error("Transaction error:", error);
         return next(new HttpError("Failed to create order", 500));
-    }finally{
+    } finally {
         session.endSession();
     }
-}
+};
+
 
 const getOrders = async (req, res, next) => {
     const userId = req.userData._id;
@@ -99,6 +116,9 @@ const cancelOrder = async (req, res, next) => {
         if(order.paymentStatus==="Paid"){
             // refund(req, res, next);
         }
+        const product = await Product.findById(order.productId);
+        product.quantity += 1;
+        await product.save();
         await order.save();
         res.status(200).json({message: "Order cancelled successfully", order});
     }

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import HttpError from "./http-error";
 const descriptionElementSchema = mongoose.Schema({
     type:{
         type:String,
@@ -12,6 +13,10 @@ const descriptionElementSchema = mongoose.Schema({
 }, {_id: false})
 
 const productSchema = mongoose.Schema({
+    brand:{
+        type: String,
+        required: true
+    },
     title: {
         type: String,
         required: true
@@ -53,5 +58,15 @@ const productSchema = mongoose.Schema({
 });
 
 const Product = mongoose.model('Product', productSchema);
+
+productSchema.pre("save", function (next) {
+    if (this.isModified("price") || this.isModified("mrp")) {
+      if (this.mrp < this.price) {
+        return next(new HttpError("Price cannot be greater than MRP", 400));
+      }
+    }
+    next();
+  });
+  
 
 export default Product; 

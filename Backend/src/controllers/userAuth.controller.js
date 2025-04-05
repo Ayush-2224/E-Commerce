@@ -1,7 +1,7 @@
 import User from "../models/user.model.js";
 import cloudinary from "../lib/cloudinary.js";
-import generateToken from "../lib/generateTOken.js";
 import HttpError from "../models/http-error.js";
+import generateTokenUser from "../lib/user.generateToken.js";
 const signup = async(req,res,next)=>{
     try {
         const {username,password,email,profilePic}=req.body;
@@ -28,7 +28,7 @@ const signup = async(req,res,next)=>{
         if(!newUser) return res.status(500).json({message:"Invalid User Data"})
         await newUser.save()
     // generate token
-    generateToken(newUser._id,res)
+    generateTokenUser(newUser._id,res)
         return res.status(200).json({
             _id:newUser._id,
             username:newUser.username,
