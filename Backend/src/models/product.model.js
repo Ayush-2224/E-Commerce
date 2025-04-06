@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import HttpError from "./http-error";
+import HttpError from "./http-error.js";
 const descriptionElementSchema = mongoose.Schema({
     type:{
         type:String,

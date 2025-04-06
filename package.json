@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "cookie-session": "^2.1.0",
+    "express-session": "^1.18.1",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
+    "razorpay": "^2.9.6",
+    "stripe": "^18.0.0"
+  }
+}

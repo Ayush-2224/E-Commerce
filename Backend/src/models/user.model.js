@@ -3,6 +3,11 @@ import bcrypt from'bcryptjs'
 import HttpError from './http-error.js';
 import Cart from './cart.model.js';
 const userSchema =mongoose.Schema({
+   googleId: {
+      type: String,
+      unique: true,
+      sparse: true
+    },    
      username:{
         type:String,
         trim: true,
