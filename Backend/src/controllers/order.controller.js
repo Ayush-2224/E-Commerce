@@ -3,7 +3,7 @@ import Cart from "../models/cart.model.js";
 import HttpError from "../models/http-error.js";
 import Product from "../models/product.model.js";
 import mongoose from "mongoose";
-
+import {generateCashfreeToken} from "./payment.controller.js";
 const createOrderbyProductId = async (req, res, next) => {
     const userId = req.userData._id;
     const {productId} = req.params;
@@ -28,8 +28,18 @@ const createOrderbyProductId = async (req, res, next) => {
         product.quantity-= 1;
         await product.save();
         await order.save();
+
+        const returnUrl = process.env.CASHFREE_RETURN_URL;
+    const tokenResponse = await generateCashfreeToken(
+      order._id.toString(),
+      price,
+      "INR",
+      req.userData.username,  // Assuming these are populated from your authentication middleware
+      req.userData.email,
+      returnUrl
+    );
         // order.orderStatus = "Order Placed";
-        res.status(201).json({message: "Order created successfully", order});
+        res.status(201).json({message: "Order created successfully", order,cashfreeToken: tokenResponse.cftoken, });
     }
     catch(error){
         // console.log(error);
@@ -40,55 +50,72 @@ const createOrderbyProductId = async (req, res, next) => {
 
 const createOrderbyCartId = async (req, res, next) => {
     const userId = req.userData._id;
-    // console.log(userId);
-    
     const session = await mongoose.startSession();
     session.startTransaction();
-    
+  
     try {
-        const cart = await Cart.findOne({ userId }).session(session);
-        if (!cart) {
-            await session.abortTransaction();
-            return next(new HttpError("Cart not found", 404));
-        }
-
-        for (const cartItem of cart.products) {
-            const product = await Product.findById(cartItem.productId).session(session);
-            if (!product) {
-                await session.abortTransaction();
-                return next(new HttpError("Product not found", 404));
-            }
-            
-            if (product.quantity < cartItem.quantity) {
-                await session.abortTransaction();
-                return next(new HttpError("Product unavailable", 400));
-            }
-            
-            for (let i = 0; i < cartItem.quantity; i++) {
-                const order = new Order({
-                    productId: cartItem.productId,
-                    price: product.price,
-                    mrp: product.mrp,    
-                    userId
-                });
-                await order.save({ session });
-            }
-            
-            product.quantity -= cartItem.quantity;
-            await product.save({ session });
-        }
-
-        await session.commitTransaction();
-        res.status(201).json({ message: "Orders created successfully" });
-    } catch (error) {
+      const cart = await Cart.findOne({ userId }).session(session);
+      if (!cart) {
         await session.abortTransaction();
-        console.error("Transaction error:", error);
-        return next(new HttpError("Failed to create order", 500));
-    } finally {
-        session.endSession();
+        return next(new HttpError("Cart not found", 404));
+      }
+  
+      let orders = [];
+      let totalAmount = 0;
+  
+      for (const cartItem of cart.products) {
+        const product = await Product.findById(cartItem.productId).session(session);
+        if (!product) {
+          await session.abortTransaction();
+          return next(new HttpError("Product not found", 404));
+        }
+        if (product.quantity < cartItem.quantity) {
+          await session.abortTransaction();
+          return next(new HttpError("Product unavailable", 400));
+        }
+  
+        // For each cart item, create an order with status "Payment Pending"
+        const order = new Order({
+          productId: cartItem.productId,
+          price: product.price,
+          mrp: product.mrp,
+          userId,
+          orderStatus: "Payment Pending",
+        });
+        await order.save({ session });
+        orders.push(order);
+        totalAmount += product.price * cartItem.quantity;
+        // Do not update product.quantity here.
+      }
+  
+      await session.commitTransaction();
+      session.endSession();
+  
+      const returnUrl = process.env.CASHFREE_RETURN_URL;
+      // If multiple orders, concatenate IDs (you could also create a separate "cart order" record)
+      const aggregatedOrderId = orders.map(o => o._id.toString()).join(",");
+      const tokenResponse = await generateCashfreeToken(
+        aggregatedOrderId,
+        totalAmount,
+        "INR",
+        req.userData.username,
+        req.userData.email,
+        returnUrl
+      );
+  
+      res.status(201).json({
+        message: "Orders created. Redirect to payment.",
+        orders,
+        cashfreeToken: tokenResponse.cftoken,
+      });
+    } catch (error) {
+      await session.abortTransaction();
+      session.endSession();
+      console.error("Transaction error:", error);
+      return next(new HttpError("Failed to create orders: " + error.message, 500));
     }
-};
-
+  };
+  
 
 const getOrders = async (req, res, next) => {
     const userId = req.userData._id;

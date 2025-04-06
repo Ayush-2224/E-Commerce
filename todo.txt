@@ -1,10 +1,12 @@
-Seller User Secret key handel
-Brand add in product •
-Profile edit  in auth and Seller
-in model check price<=mrp
-image in add product
-quantity check available before adiing anywhere
-decrease quantity when purchased
-google login
-forgot password handle
-payment implement 
+
+Ayaman:
+image in add product aur profile --
+Seller User Secret key handel//
+quantity check manage anand mrp>=price // 
+discription handle
+Ayush:
+payment implement Refund --
+
+Brand add in product//
+Profile edit  in auth and Seller 
+google login -- (user)
