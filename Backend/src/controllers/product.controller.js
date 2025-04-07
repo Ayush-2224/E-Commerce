@@ -135,9 +135,12 @@ const editProduct = async (req, res, next) => {
         const { price, quantity, description } = req.body;
 
         // Find product by id and seller
-        const product = await Product.findOne({ _id: id, seller });
+        const product = await Product.findById(id);
         if (!product) {
             return next(new HttpError("Product not found", 404));
+        }
+        if(product.seller != seller){
+            return next(new HttpError("Unauthorized", 400))
         }
 
         // Update basic fields
@@ -168,7 +171,7 @@ const editProduct = async (req, res, next) => {
                 return next(new HttpError("Invalid description format", 400));
             }
 
-            const descriptionFiles = req.files?.descriptionImages || [];
+            const descriptionFiles = req.files && req.files.descriptionImages ? req.files.descriptionImages: []
             let fileIndex = 0;
 
             for (const element of parsedDescription) {
@@ -181,7 +184,7 @@ const editProduct = async (req, res, next) => {
                         } catch (error) {
                             console.log("Description image upload error:", error);
                             return next(new HttpError("Failed to upload one of the description images", 400));
-                        }
+                        }   
                     } else {
                         return next(new HttpError("Missing image files for description", 400));
                     }
