@@ -1,11 +1,11 @@
 import Seller from "../models/seller.model.js";
-import cloudinary from "../lib/cloudinary.js";
+import cloudinary, { uploadToCloudinary } from "../lib/cloudinary.js";
 import HttpError from "../models/http-error.js";
 import generateTokenSeller from "../lib/seller.generateToken.js";
 
 const signup = async(req,res,next)=>{
     try {
-        const {username, password, email, profilePic, address} = req.body;
+        const {username, password, email, address} = req.body;
         if([email, username, password, address].some((field) =>
                 field?.trim() === "")
         ){
@@ -17,7 +17,8 @@ const signup = async(req,res,next)=>{
         if(seller) return res.status(401).json({message: "Seller Already exists! Please Login"});
         
         if(profilePic){
-            imageUrl = (await cloudinary.uploader.upload(profilePic)).secure_url;
+            const result = await uploadToCloudinary(req.file.buffer)
+            imageUrl = result.secure_url
         }
         const newSeller = new Seller({
             username,

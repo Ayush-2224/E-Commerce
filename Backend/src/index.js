@@ -43,6 +43,10 @@ app.use("/api/cart",cartRoutes)
 app.use("/api/review",reviewRoutes)
 
 app.use((error, req, res, next) =>{
+  if (error.code === 'LIMIT_UNEXPECTED_FILE') {
+    // Map the multer error code to a valid HTTP status code (e.g., 400 Bad Request)
+    return res.status(400).json({ error: 'Unexpected file upload.' });
+  }
     if(res.headerSent){
         return next(error)
     }
