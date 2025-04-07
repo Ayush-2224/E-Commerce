@@ -16,7 +16,7 @@ const signup = async(req,res,next)=>{
         let imageUrl;
         if(seller) return res.status(401).json({message: "Seller Already exists! Please Login"});
         
-        if(profilePic){
+        if(req.file){
             const result = await uploadToCloudinary(req.file.buffer)
             imageUrl = result.secure_url
         }
