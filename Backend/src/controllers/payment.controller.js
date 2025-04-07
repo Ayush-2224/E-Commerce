@@ -1,4 +1,5 @@
 import Payment from '../models/Payment.model.js';
+import Product from "../models/product.model.js"
 import Order from "../models/order.model.js"
 import HttpError from '../models/http-error.js'
 import axios from 'axios'

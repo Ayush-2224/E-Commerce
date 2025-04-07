@@ -88,9 +88,7 @@ const createOrderbyCartId = async (req, res, next) => {
         // Do not update product.quantity here.
       }
   
-      await session.commitTransaction();
-      session.endSession();
-  
+      
       const returnUrl = process.env.CASHFREE_RETURN_URL;
       // If multiple orders, concatenate IDs (you could also create a separate "cart order" record)
       const aggregatedOrderId = orders.map(o => o._id.toString()).join(",");
@@ -102,6 +100,8 @@ const createOrderbyCartId = async (req, res, next) => {
         req.userData.email,
         returnUrl
       );
+      await session.commitTransaction();
+      session.endSession();
   
       res.status(201).json({
         message: "Orders created. Redirect to payment.",
