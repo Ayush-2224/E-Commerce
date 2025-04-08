@@ -81,5 +81,19 @@ const logout = async(req,res,next)=>{
         return next(new HttpError("ISE", 400));
     }
 }
+const checkAuth=async(req,res,next)=>{
+    try {
+        const seller=req.sellerData
+        if(!seller) return res.status(401).json({message:"Unauthorized"})
+        return res.status(200).json({
+            _id:seller._id,
+            username:seller.username,
+            email:seller.email,
+        })
 
-export {signup, login, logout};
+    } catch (error) {
+        console.log("checkAuth: ", error)
+        return next(new HttpError("ISE", 400))
+    }
+}
+export {signup, login, logout, checkAuth};
