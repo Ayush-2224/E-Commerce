@@ -59,13 +59,24 @@ app.get('/auth/google', passport.authenticate('google', {
 
 app.get('/auth/google/callback', passport.authenticate('google', {
     failureRedirect: '/api/user/login',
-    failureFlash: true
 }), (req, res) => {
     try {
         // Generate JWT token for the authenticated user
         const token = generateTokenUser(req.user._id, res);
         // Successful authentication
-        res.redirect(`${process.env.FRONTEND_URL}/dashboard`);
+        res.cookie('token', token, {
+            httpOnly: true,
+        });
+        res.json({
+            success: true,
+            message: "Logged in with Google successfully",
+            token,
+            user: {
+                id: req.user._id,
+                email: req.user.email,
+                username: req.user.username
+            }
+        });
     } catch (error) {
         console.error('Authentication callback error:', error);
         res.redirect('/api/user/login');
