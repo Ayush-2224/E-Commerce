@@ -48,6 +48,7 @@ const createOrderbyProductId = async (req, res, next) => {
     }
 }
 
+// quantity is not updated here handel it
 const createOrderbyCartId = async (req, res, next) => {
     const userId = req.userData._id;
     const session = await mongoose.startSession();
@@ -155,3 +156,4 @@ const cancelOrder = async (req, res, next) => {
 }
 
 export {createOrderbyProductId, createOrderbyCartId, getOrders, cancelOrder};
+
