@@ -13,7 +13,6 @@ export const useAuthStore = create((set,get) => ({
             // set({isCheckingAuth:true})
             const response =await axiosInstance.get('/user/userInfo')
             set({authUser:response.data})
-            get().connectSocket()
         } catch (error) {
             console.log(error)
             set({authUser:null})
@@ -26,10 +25,9 @@ export const useAuthStore = create((set,get) => ({
         set({isSigningUp:true})
         try {
             
-            const response = await axiosInstance.post('/auth/signup',formData)
+            const response = await axiosInstance.post('/user/signup',formData)
             toast.success("Account created successfully")
             set({authUser:response.data})
-            get().connectSocket()
         } catch (error) {
             console.log(error)
             toast.error(error.response.data.message)
@@ -42,10 +40,9 @@ export const useAuthStore = create((set,get) => ({
     },
     logout: async()=>{
         try {
-            await axiosInstance.post('/auth/logout')
+            await axiosInstance.post('/user/logout')
             set({authUser:null})
             toast.success("Logged out successfully")
-            get().dissconnectSocket()
         } catch (error) {
             console.log(error)
             toast.error(error.response.data.message)
@@ -57,8 +54,6 @@ export const useAuthStore = create((set,get) => ({
             const response = await axiosInstance.post('/auth/login',formData)
             set({authUser:response.data})
             toast.success("Logged in successfully")
-            get().connectSocket()            
-            
         } catch (error) {
             console.log(error)
             toast.error(error.response.data.message)
@@ -67,38 +62,20 @@ export const useAuthStore = create((set,get) => ({
             set({isLoggingIn:false})
         }
     },
-    updateProfile: async(formData)=>{
-        set({isUpdatingProfile:true})
-        try {
-            const response = await axiosInstance.put('/auth/update-profile',formData)
-            set({authUser:response.data})
-            toast.success("Profile updated successfully")
-        } catch (error) {``
-            console.log(error)
-            toast.error(error.response.data.message)
-        }
-        finally{
-            set({isUpdatingProfile:false})
-        }
-    },
-    connectSocket:()=>{
-        const {authUser}=get()
-        if(!authUser || get().socket?.connected) return
-         const socket=io(BaseURL,{
-                query:{
-                    userId: authUser._id
-                }
-         })
-         socket.connect()
-         set({ socket: socket });
-         socket.on("getOnlineUsers",(userIds)=>{
-             set({onlineUsers:userIds})
-         })
-    },
-    dissconnectSocket:()=>{
-       if(get().socket?.connected){
-           get().socket.disconnect()
-       }
-    }
+    // updateProfile: async(formData)=>{
+    //     set({isUpdatingProfile:true})
+    //     try {
+    //         const response = await axiosInstance.put('/auth/update-profile',formData)
+    //         set({authUser:response.data})
+    //         toast.success("Profile updated successfully")
+    //     } catch (error) {``
+    //         console.log(error)
+    //         toast.error(error.response.data.message)
+    //     }
+    //     finally{
+    //         set({isUpdatingProfile:false})
+    //     }
+    // },
+    
     
 }))
