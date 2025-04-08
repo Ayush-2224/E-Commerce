@@ -1,10 +1,10 @@
 import User from "../models/user.model.js";
-import cloudinary from "../lib/cloudinary.js";
+import cloudinary, { uploadToCloudinary } from "../lib/cloudinary.js";
 import HttpError from "../models/http-error.js";
 import generateTokenUser from "../lib/user.generateToken.js";
 const signup = async(req,res,next)=>{
     try {
-        const {username,password,email,profilePic}=req.body;
+        const {username,password,email}=req.body;
         if([email,username,password].some((field)=>
                 field?.trim()==="")
            ){
@@ -15,13 +15,16 @@ const signup = async(req,res,next)=>{
         let imageUrl
         if(user) return res.status(401).json({message:"User Already exists! Please Login"})
         
-        if(profilePic){
-            imageUrl=(await cloudinary.uploader.upload(profilePic)).secure_url
+        if(req.file){
+            const result = await uploadToCloudinary(req.file.buffer);
+            imageUrl = result.secure_url
+        }else{
+            imageUrl = "aa"
         }
         const newUser=User({
             username,
             email,
-            password,
+            password,   
             profilePic:imageUrl
         })
 

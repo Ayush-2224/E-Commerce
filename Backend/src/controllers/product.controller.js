@@ -1,6 +1,7 @@
 import Product from '../models/product.model.js'
 import HttpError from '../models/http-error.js'
-import cloudinary from '../lib/cloudinary.js'
+import cloudinary, { uploadToCloudinary } from '../lib/cloudinary.js'
+import { json } from 'express';
 
 const addProduct = async (req, res, next) => {
     try {
@@ -11,7 +12,8 @@ const addProduct = async (req, res, next) => {
             price,
             mrp,
             specifications,
-            quantity
+            quantity,
+            description
         } = req.body;
 
         // Validate required fields
@@ -30,13 +32,40 @@ const addProduct = async (req, res, next) => {
 
         // Handle image upload to Cloudinary
         let imageUrl = [];
-        if (req.file) {
-            try {
-                const uploadResult = await cloudinary.uploader.upload(req.file.path);
-                imageUrl.push(uploadResult.secure_url);
-            } catch (error) {
-                console.log("Image upload error:", error);
-                return res.status(400).json({ message: "Failed to upload image" });
+        if(req.files && req.files.mainImages){
+            for(const file of req.files.mainImages){
+                try{
+                    const uploadResult = await uploadToCloudinary(file.buffer)
+                    imageUrl.push(uploadResult.secure_url)
+                }catch(error){
+                    console.log("Main image upload error", error);
+                    return next(new HttpError("Failed to upload main images", 400))
+                }
+            }
+        }
+
+        let parsedDescription = []
+        try{
+            parsedDescription = JSON.parse(description)
+        }catch(error){
+            return next(new HttpError("Invalid description format", 400))
+        }
+        const descriptionFiles = req.files && req.files.descriptionImages ? req.files.descriptionImages: []
+        let fileIndex = 0
+        for(const element of parsedDescription){
+            if(element.type === "image"){
+                if(descriptionFiles[fileIndex]){
+                    try{
+                        const uploadResult = await uploadToCloudinary(descriptionFiles[fileIndex].buffer)
+                        element.data = uploadResult.secure_url
+                        fileIndex++
+                    }catch(error){
+                        console.log("Description image upload error:", error);
+                        return next(new HttpError("Failed to upload one of the description images", 400))
+                    }
+                }else{
+                    return next(new HttpError("Missing image files", 400))
+                }
             }
         }
 
@@ -45,9 +74,10 @@ const addProduct = async (req, res, next) => {
             brand,
             title,
             category,
-            imageUrl,
+            imageUrl,   
             price: Number(price),
             mrp: Number(mrp) || Number(price), // If mrp not provided, use price as mrp
+            description: parsedDescription,
             specifications: specifications || "",
             seller,
             quantity: Number(quantity)
@@ -98,25 +128,82 @@ const getProductsByCategory = async (req,res,next)=>{
     }
 }
 
-const editProduct = async (req,res,next)=>{
+const editProduct = async (req, res, next) => {
     try {
-        const {id}=req.params
-        const seller=req.sellerData._id
-        const {price,quantity}=req.body
-        const product = await Product.findOneAndUpdate(
-            {_id: id, seller},
-            { price, quantity },
-            { new: true, runValidators: true }
-          );
-          
-        if(!product){
-            return next(new HttpError("Product not found",404))
+        const { id } = req.params;
+        const seller = req.sellerData._id;
+        const { price, quantity, description } = req.body;
+
+        // Find product by id and seller
+        const product = await Product.findById(id);
+        if (!product) {
+            return next(new HttpError("Product not found", 404));
         }
-        return res.status(200).json({product})
+        if(product.seller != seller){
+            return next(new HttpError("Unauthorized", 400))
+        }
+
+        // Update basic fields
+        if (price !== undefined) product.price = price;
+        if (quantity !== undefined) product.quantity = quantity;
+
+        // Optional: Replace main images if provided
+        if (req.files && req.files.mainImages) {
+            let imageUrl = [];
+            for (const file of req.files.mainImages) {
+                try {
+                    const uploadResult = await uploadToCloudinary(file.buffer);
+                    imageUrl.push(uploadResult.secure_url);
+                } catch (error) {
+                    console.log("Main image upload error", error);
+                    return next(new HttpError("Failed to upload main images", 400));
+                }
+            }
+            product.imageUrl = imageUrl; // update main images
+        }
+
+        // Optional: Replace description and associated images
+        if (description) {
+            let parsedDescription = [];
+            try {
+                parsedDescription = JSON.parse(description);
+            } catch (error) {
+                return next(new HttpError("Invalid description format", 400));
+            }
+
+            const descriptionFiles = req.files && req.files.descriptionImages ? req.files.descriptionImages: []
+            let fileIndex = 0;
+
+            for (const element of parsedDescription) {
+                if (element.type === "image") {
+                    if (descriptionFiles[fileIndex]) {
+                        try {
+                            const uploadResult = await uploadToCloudinary(descriptionFiles[fileIndex].buffer);
+                            element.data = uploadResult.secure_url;
+                            fileIndex++;
+                        } catch (error) {
+                            console.log("Description image upload error:", error);
+                            return next(new HttpError("Failed to upload one of the description images", 400));
+                        }   
+                    } else {
+                        return next(new HttpError("Missing image files for description", 400));
+                    }
+                }
+            }
+
+            product.description = parsedDescription; // update description
+        }
+
+        // Save updated product
+        const updatedProduct = await product.save();
+        return res.status(200).json({ product: updatedProduct });
+
     } catch (error) {
-        return next(new HttpError("Internal Server Error",500))
+        console.log("Edit product error:", error);
+        return next(new HttpError("Internal Server Error", 500));
     }
-}
+};
+
 
 // const deleteProduct = async (req,res,next)=>{
 //     try {
