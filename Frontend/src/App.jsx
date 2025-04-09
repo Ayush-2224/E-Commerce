@@ -1,15 +1,13 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import Navlinks from './components/Navigation/Navlinks';
-
+import "./App.css"
+import { Routes, Route, BrowserRouter } from 'react-router-dom';
+import MainNavigation from './components/Navigation/MainNavigation';
 function App() {
   return (
     <div>
-      <Navlinks />
-      <Routes>
-        <Route path="/" element={<h1>Home Page</h1>} />
-        {/* Add other routes as needed */}
-      </Routes>
+      <BrowserRouter>
+      <MainNavigation />
+      </BrowserRouter>
     </div>
   );
 }

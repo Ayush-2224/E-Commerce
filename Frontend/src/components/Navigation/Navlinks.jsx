@@ -1,14 +1,24 @@
 import React from 'react';
 import "./Navlinks.css";
 import { NavLink } from "react-router"
-
+import cart from "../../assets/cart.png"
 const Navlinks = () => {
   return (
-    <nav>
-      <NavLink to="/">
-        Home
+    <ul>
+        <li>
+        <NavLink to="/signup">
+        Sign up
       </NavLink>
-    </nav>
+        </li>
+        <li>
+      <NavLink to="/cart">
+        <img src={cart} alt="" height={40}/>
+      </NavLink>
+        </li>
+    <li>
+        
+    </li>
+    </ul>
   );
 };
 
