@@ -83,13 +83,7 @@ const logout = async(req,res,next)=>{
 }
 const checkAuth=async(req,res,next)=>{
     try {
-        const seller=req.sellerData
-        if(!seller) return res.status(401).json({message:"Unauthorized"})
-        return res.status(200).json({
-            _id:seller._id,
-            username:seller.username,
-            email:seller.email,
-        })
+        return res.status(200).json(req.sellerData)
 
     } catch (error) {
         console.log("checkAuth: ", error)

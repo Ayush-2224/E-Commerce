@@ -77,13 +77,7 @@ const logout=async(req,res,next)=>{
 }
 const checkAuth=async(req,res,next)=>{
     try {
-        const user=req.userData
-        if(!user) return res.status(401).json({message:"Unauthorized"})
-        return res.status(200).json({
-            _id:user._id,
-            username:user.username,
-            email:user.email,
-        })
+        return res.status(200).json(req.userData)
     } catch (error) {
         console.log("checkAuth: ", error)
         return next(new HttpError("ISE", 400))
