@@ -31,8 +31,6 @@ export const UserSignup = () => {
         const file = e.target.files[0];
         if (file) {
             setProfilePic(file);
-
-            // Create preview
             const reader = new FileReader();
             reader.onload = () => {
                 setPreviewImage(reader.result);
@@ -61,7 +59,6 @@ export const UserSignup = () => {
             return;
         }
 
-        // Create FormData to handle file upload
         const submitData = new FormData();
         submitData.append('username', formData.username);
         submitData.append('email', formData.email);
@@ -73,7 +70,7 @@ export const UserSignup = () => {
 
         try {
             await signup(submitData);
-            navigate('/dashboard'); // Navigate to dashboard after successful signup
+            navigate('/'); 
         } catch (error) {
             console.error("Signup failed:", error);
         }
