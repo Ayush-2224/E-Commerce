@@ -71,7 +71,7 @@ const SellerSignup = () => {
     
     try {
       await signup(submitData);
-      navigate('/seller/dashboard'); // Navigate to seller dashboard after successful signup
+      navigate('/seller/dashboard'); 
     } catch (error) {
       console.error("Seller signup failed:", error);
     }
