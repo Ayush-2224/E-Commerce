@@ -34,7 +34,7 @@ const addProductToCart = async (req, res, next) => {
 const getCart = async (req, res, next) => {
     const userId = req.userData._id;
     try {
-        const cart = await Cart.findOne({userId});
+        const cart = await Cart.findOne({userId}).populate("productId", "imageUrl title price mrp seller");
         res.status(200).json({cart});
     } catch (error) {
         return next(new HttpError("Failed to get cart", 500));
