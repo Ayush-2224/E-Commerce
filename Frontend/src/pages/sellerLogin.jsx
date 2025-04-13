@@ -16,22 +16,27 @@ function SellerLogin() {
 
   const validateForm = () => {
     if (!formData.email.trim()) {
-      return toast.error("Email is required");
+       toast.error("Email is required");
+       return false;
     }
     if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      return toast.error("Email is invalid");
+      toast.error("Email is invalid");
+      return false;
     }
     if (!formData.password.trim()) {
-      return toast.error("Password is required");
+      toast.error("Password is required");
+      return false;
     }
     if (formData.password.length < 6) {
-      return toast.error("Password must be at least 6 characters long");
+       toast.error("Password must be at least 6 characters long");
+      return false;
     }
     return true;
   };
  
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     if (validateForm()) {
       try {
         await login(formData);
