@@ -24,7 +24,6 @@ export const useAuthStore = create((set,get) => ({
     signup: async (formData) => {
         set({isSigningUp:true})
         try {
-            
             const response = await axiosInstance.post('/seller/signup',formData)
             toast.success("Account created successfully")
             set({authSeller:response.data})
@@ -35,7 +34,6 @@ export const useAuthStore = create((set,get) => ({
         finally{
             set({isSigningUp:false})
         }
-
         
     },
     logout: async()=>{
