@@ -56,7 +56,7 @@ const login= async(req,res,next)=>{
     if(!isPasswordCorrect){
         return res.status(400).json({message:"Invalid credentials password"})
     }
-    generateToken(user._id,res)
+    generateTokenUser(user._id,res)
     // console.log("login success");
     return res.status(200).json({
         _id:user._id,

@@ -31,6 +31,7 @@ export const useUserAuthStore = create((set,get) => ({
         } catch (error) {
             console.log(error)
             toast.error(error.response.data.message)
+            throw error
         }
         finally{
             set({isSigningUp:false})
@@ -46,6 +47,7 @@ export const useUserAuthStore = create((set,get) => ({
         } catch (error) {
             console.log(error)
             toast.error(error.response.data.message)
+            throw error
         }
     },
     login: async(formData)=>{
@@ -53,10 +55,11 @@ export const useUserAuthStore = create((set,get) => ({
         try {
             const response = await axiosInstance.post('/user/login',formData)
             set({authUser:response.data})
-            toast.success("Logged in successfully")
+            return response.data
         } catch (error) {
             console.log(error)
             toast.error(error.response.data.message)
+            throw error
         }
         finally{
             set({isLoggingIn:false})
