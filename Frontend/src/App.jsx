@@ -1,18 +1,16 @@
-import React from 'react';
-import "./App.css"
-import { Routes, Route, BrowserRouter } from 'react-router-dom';
-import MainNavigation from './components/Navigation/MainNavigation';
-import Footer from './components/Footer/Footer';
+import React from 'react'
+import { Routes, Route } from 'react-router-dom'
+import UserLogin from './pages/userlogin'
+import SellerLogin from './pages/sellerLogin'
+import './App.css'
+
 function App() {
   return (
-    <div>
-      <BrowserRouter>
-      <MainNavigation />
-      <Footer />
-      </BrowserRouter>
-
-    </div>
-  );
+    <Routes>
+      <Route path="/a" element={<UserLogin />} />
+      <Route path="/" element={<SellerLogin/>} />
+    </Routes>
+  )
 }
 
-export default App;
+export default App

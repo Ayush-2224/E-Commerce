@@ -2,9 +2,9 @@ import {create} from 'zustand';
 import { axiosInstance } from '../lib/axios.js'
 import toast from 'react-hot-toast';
 // const BaseURL="http://localhost:5001/api/user"
-export const useAuthStore = create((set,get) => ({
+export const useSellerAuthStore = create((set,get) => ({
     authSeller:null,
-    isSignningUp:false,
+    isSigningUp:false,
     isLoggingIn:false,
     isUpdatingProfile:false,
     isCheckingAuth:true,
