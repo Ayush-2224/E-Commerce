@@ -10,7 +10,6 @@ function App() {
       <MainNavigation />
       <Footer />
       </BrowserRouter>
-
     </div>
   );
 }
