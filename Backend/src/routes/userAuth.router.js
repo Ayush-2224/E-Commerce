@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { signup as userSignup,login as userLogin,logout as userLogout,checkAuth as userCheckAuth} from '../controllers/userAuth.controller.js';
 import fileUpload from '../middleware/file-upload.js';
-import { verifyUserAuthentication } from '../middleware/userAuth.middleware.js';
+import verifyUserAuthentication from '../middleware/userAuth.middleware.js';
 const router= Router();
 
 
