@@ -7,7 +7,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 
-function UserLogin() {
+export function UserLogin() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -208,6 +208,6 @@ function UserLogin() {
   );
 }
 
-export default UserLogin;
+
   
  
