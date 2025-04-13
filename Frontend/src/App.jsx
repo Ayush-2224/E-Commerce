@@ -3,13 +3,13 @@ import "./App.css"
 import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import MainNavigation from './components/Navigation/MainNavigation';
 import Footer from './components/Footer/Footer';
-import { Outlet } from 'react-router-dom';
 import { UserSignup } from './pages/userSignup';
 import { UserLogin } from './pages/userlogin';
 import SellerSignup from './pages/sellerSignup';
 import SellerLogin from './pages/sellerLogin';
 import AuthPages from './util/AuthPages';
 import NavPages from './util/NavPages';
+import { Toaster } from 'react-hot-toast';
 function App() {
   return (
     <BrowserRouter>
@@ -26,6 +26,7 @@ function App() {
       <Route path="/seller/signup" element={<SellerSignup />} />
     </Route>
   </Routes>
+  <Toaster/>
   </BrowserRouter>
   );
 }
