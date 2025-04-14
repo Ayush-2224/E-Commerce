@@ -3,7 +3,7 @@ import HttpError from '../models/http-error.js';
 import Product from '../models/product.model.js';
 
 const addProductToCart = async (req, res, next) => {
-    const {quantity} = req.body;
+    const { quantity = 1 } = req.body;
     const {productId} = req.params;
     const userId = req.userData._id;
     try {
@@ -34,8 +34,25 @@ const addProductToCart = async (req, res, next) => {
 const getCart = async (req, res, next) => {
     const userId = req.userData._id;
     try {
-        const cart = await Cart.findOne({userId}).populate("productId", "imageUrl title price mrp seller");
-        res.status(200).json({cart});
+        const cart = await Cart.findOne({ userId })
+  .populate({
+    path: "products.productId",
+    select: "imageUrl title price mrp seller",
+    populate: {
+      path: "seller",
+      select: "username"
+    }
+  });
+
+        if (cart && Array.isArray(cart.products)) {
+            cart.products = cart.products.map(entry => {
+              if (entry.productId && Array.isArray(entry.productId.imageUrl)) {
+                entry.productId.imageUrl = entry.productId.imageUrl[0];
+              }
+              return entry;
+            });
+          }
+        res.status(200).json(cart);
     } catch (error) {
         return next(new HttpError("Failed to get cart", 500));
     }

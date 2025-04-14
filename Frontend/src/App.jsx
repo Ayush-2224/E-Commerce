@@ -10,12 +10,13 @@ import SellerLogin from './pages/sellerLogin';
 import AuthPages from './util/AuthPages';
 import NavPages from './util/NavPages';
 import { Toaster } from 'react-hot-toast';
+import Cart from './pages/cart';
 function App() {
   return (
     <BrowserRouter>
     <Routes>
     <Route element={<NavPages/>}>
-      
+      <Route path='/cart' element={<Cart/>} />
     </Route>
 
     {/* Auth pages without Nav + Footer */}
