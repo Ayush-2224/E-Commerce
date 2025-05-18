@@ -52,51 +52,6 @@ app.use("/api/order", orderRoutes)
 app.use("/api/cart", cartRoutes)
 app.use("/api/review", reviewRoutes)
 
-// Google Auth Routes
-app.get('/auth/google', passport.authenticate('google', {
-    scope: ['profile', 'email']
-}));
-
-app.get('/auth/google/callback', passport.authenticate('google', {
-    failureRedirect: '/api/user/login',
-}), (req, res) => {
-    try {
-        // Generate JWT token for the authenticated user
-        const token = generateTokenUser(req.user._id, res);
-        // Successful authentication
-        res.cookie('token', token, {
-            httpOnly: true,
-        });
-        res.json({
-            success: true,
-            message: "Logged in with Google successfully",
-            token,
-            user: {
-                id: req.user._id,
-                email: req.user.email,
-                username: req.user.username
-            }
-        });
-    } catch (error) {
-        console.error('Authentication callback error:', error);
-        res.redirect('/api/user/login');
-    }
-});
-
-// Test route
-app.get('/', (req, res) => {
-    if (req.isAuthenticated()) {
-        res.json({
-            authenticated: true,
-            user: {
-                username: req.user.username,
-                email: req.user.email
-            }
-        });
-    } else {
-        res.json({ authenticated: false });
-    }
-});
 
 // Error handling middleware
 app.use((error, req, res, next) => {

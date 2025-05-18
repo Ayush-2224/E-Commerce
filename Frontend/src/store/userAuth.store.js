@@ -80,8 +80,10 @@ export const useUserAuthStore = create((set,get) => ({
     //     }
     // },
     // ,
-    // googleLogin()=>{
-
-    // }
     
+  loginWithGoogle: () => {
+    window.location.href = `http://localhost:5001/api/user/auth/google`;
+  },
+
+ 
 }))
