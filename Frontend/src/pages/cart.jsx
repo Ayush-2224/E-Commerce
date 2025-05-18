@@ -144,9 +144,13 @@ const Cart = () => {
                                 You will save ₹{(totalMrp - totalPrice).toFixed(2)} on this order
                             </p>
 
-                            <button className="w-full py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out disabled:bg-indigo-400 disabled:cursor-not-allowed shadow-md">
+                            <button
+                                className="w-full py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out disabled:bg-indigo-400 disabled:cursor-not-allowed shadow-md"
+                                disabled={totalMrp === 0}
+                            >
                                 Place Order
                             </button>
+
                         </div>
                     </div>
                 </div>
