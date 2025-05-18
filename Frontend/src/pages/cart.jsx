@@ -3,20 +3,21 @@ import { axiosInstance } from '../lib/axios';
 import LoadingSpinner from "../components/UIElements/LoadingSpinner";
 import CartProduct from '../components/UIElements/cartProduct';
 import toast from 'react-hot-toast';
-
+import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 const Cart = () => {
     const [cart, setCart] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
     const [totalPrice, setTotalPrice] = useState(0);
     const [totalMrp, setTotalMrp] = useState(0);
     const changeQuantity = async (productId, quantity) => {
         setLoading(true);
-        setError(null); // Clear previous errors
+        setError(null); 
         try {
             const response = await axiosInstance.put(`cart/modifyQty/${productId}`, { quantity });
             setCart(response.data.cart);
-            // toast.success("Quantity updated!");
         } catch (err) {
             const errorMessage = err.response?.data?.message || "Failed to change quantity";
             setError(errorMessage);
@@ -28,7 +29,7 @@ const Cart = () => {
 
     const removeProduct = async (productId) => {
         setLoading(true);
-        setError(null); // Clear previous errors
+        setError(null); 
         try {
             const response = await axiosInstance.delete(`cart/remove/${productId}`);
             setCart(response.data.cart);
@@ -145,11 +146,13 @@ const Cart = () => {
                             </p>
 
                             <button
-                                className="w-full py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out disabled:bg-indigo-400 disabled:cursor-not-allowed shadow-md"
-                                disabled={totalMrp === 0}
-                            >
-                                Place Order
-                            </button>
+  className="w-full py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out disabled:bg-indigo-400 disabled:cursor-not-allowed shadow-md"
+  disabled={totalMrp === 0}
+  onClick={() => navigate('/order')}
+>
+  Place Order
+</button>
+
 
                         </div>
                     </div>
