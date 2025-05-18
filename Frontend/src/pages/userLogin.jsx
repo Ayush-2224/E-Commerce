@@ -148,7 +148,7 @@ export function UserLogin() {
               <div className="text-center mt-6">
                 <p className="text-sm text-gray-600">
                   Don't have an account?{" "}
-                  <Link to="/signup" className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                  <Link to="/user/signup" className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
                     Create account
                   </Link>
                 </p>
