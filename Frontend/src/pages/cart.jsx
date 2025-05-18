@@ -33,7 +33,7 @@ const Cart = () => {
         try {
             const response = await axiosInstance.delete(`cart/remove/${productId}`);
             setCart(response.data.cart);
-            toast.success("Product removed from cart!");
+            // toast.success("Product removed from cart!");
         } catch (err) {
             const errorMessage = err.response?.data?.message || "Failed to remove product";
             setError(errorMessage);
@@ -104,7 +104,7 @@ const Cart = () => {
                             if (!productEntry || !productEntry.productId) return null;
                             return (
                                 <CartProduct
-                                    key={productEntry.productId._id || productEntry.productId.id}
+                                    key={productEntry.productId._id}
                                     product={productEntry.productId}
                                     quantity={productEntry.quantity}
                                     changeQuantity={changeQuantity}

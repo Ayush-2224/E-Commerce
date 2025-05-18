@@ -18,7 +18,6 @@ async function fetfetchCartWithDetails(userId) {
           if (entry.productId && Array.isArray(entry.productId.imageUrl)) {
               entry.productId.imageUrl = entry.productId.imageUrl[0];
             }
-            console.log(entry);
             return entry;
         });
     }
@@ -76,7 +75,9 @@ const removeProductFromCart = async (req, res, next) => {
         await cart.save();
 
         const updatedCart = await fetfetchCartWithDetails(userId)
-        res.status(200).json({message: "Product removed from cart", cart});
+        console.log(updatedCart);
+        
+        res.status(200).json({message: "Product removed from cart", cart:updatedCart});
     } catch (error) {
         return next(new HttpError("Failed to remove product from cart", 500));
     }
@@ -94,7 +95,6 @@ const changeQuantityFromCart =async(req,res,next)=>{
         const product = cart.products.find(
             (element) => element.productId.toString() === productId
         );
-        console.log(product);
         if(!product){
             return next(new HttpError("Product not found", 404));
         }
@@ -102,6 +102,8 @@ const changeQuantityFromCart =async(req,res,next)=>{
           await cart.save();
         
           const updatedCart = await fetfetchCartWithDetails(userId)
+          console.log(updatedCart);
+          
           res.status(200).json({
             message: "Quantity updated successfully",
             cart: updatedCart
