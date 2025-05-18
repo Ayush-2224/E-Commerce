@@ -15,7 +15,7 @@ const CartProduct = ({ product, changeQuantity, quantity, removeProduct }) => {
       </div>
 
       {/* Right: Details (title, seller, price, offers, delivery) */}
-      <div className="row-span-1 flex flex-col space-y-2">
+      <div className="row-span-1 space-y-2">
         <div>
           <h3 className="text-lg font-semibold text-gray-900">
             {product.title}
@@ -38,7 +38,7 @@ const CartProduct = ({ product, changeQuantity, quantity, removeProduct }) => {
           </div>
         </div>
 
-        <button className="text-sm text-blue-600 hover:underline self-start">
+        <button className="text-sm text-blue-600 cursor-pointer hover:underline self-start">
           7 offers available
         </button>
 
@@ -54,14 +54,14 @@ const CartProduct = ({ product, changeQuantity, quantity, removeProduct }) => {
           <button
             onClick={() => changeQuantity(product._id, quantity - 1)}
             disabled={quantity <= 1}
-            className="px-3 py-1 hover:bg-gray-100 disabled:opacity-50"
+            className="px-3 py-1 hover:bg-gray-100 disabled:opacity-50 enabled:cursor-pointer"
           >
             −
           </button>
           <span className="px-4 font-medium">{quantity}</span>
           <button
             onClick={() => changeQuantity(product._id, quantity + 1)}
-            className="px-3 py-1 hover:bg-gray-100"
+            className="px-3 py-1 hover:bg-gray-100 enabled:cursor-pointer"
           >
             +
           </button>
@@ -69,7 +69,7 @@ const CartProduct = ({ product, changeQuantity, quantity, removeProduct }) => {
 
         <button
           onClick={() => removeProduct(product._id)}
-          className="text-sm text-blue-600 hover:underline"
+          className="text-sm text-blue-600 hover:underline cursor-pointer"
         >
           REMOVE
         </button>
