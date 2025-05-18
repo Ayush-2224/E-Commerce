@@ -2,6 +2,7 @@ import User from "../models/user.model.js";
 import cloudinary, { uploadToCloudinary } from "../lib/cloudinary.js";
 import HttpError from "../models/http-error.js";
 import generateTokenUser from "../lib/user.generateToken.js";
+import passport from "../Auth/google.js";
 const signup = async(req,res,next)=>{
     try {
         const {username,password,email}=req.body;
@@ -84,4 +85,34 @@ const checkAuth=async(req,res,next)=>{
 
     }
 }   
-export {signup,login,logout,checkAuth}
+
+ const googleAuth = passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    prompt: 'select_account',
+  });
+
+  const clientURL = "http://localhost:5173";
+
+  const googleCallback = [
+    passport.authenticate('google', {
+      failureRedirect: '/api/user/login',
+      session: false,
+    }),
+    async (req, res) => {
+      try {
+        if (!req.user || !req.user._id) {
+          throw new HttpError('No user returned from Google', 500);
+        }
+  
+        generateTokenUser(req.user._id, res);
+
+      return res.redirect(`${clientURL}`);
+        
+      } catch (err) {
+        console.error('Google callback error:', err);
+        return res.redirect(`${clientURL}/user/signup`);
+      }
+    }
+  ];
+  
+export {signup,login,logout,checkAuth,googleAuth,googleCallback}

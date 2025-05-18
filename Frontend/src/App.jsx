@@ -12,6 +12,7 @@ import NavPages from './util/NavPages';
 import { Toaster } from 'react-hot-toast';
 import Cart from './pages/cart';
 function App() {
+  
   return (
     <BrowserRouter>
     <Routes>

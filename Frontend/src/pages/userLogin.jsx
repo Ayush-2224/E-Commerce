@@ -1,10 +1,11 @@
 import { useUserAuthStore } from "../store/userAuth.store";
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
 
 
 export function UserLogin() {
@@ -13,10 +14,14 @@ export function UserLogin() {
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
-  const { login, isLoggingIn } = useUserAuthStore();
+  const { login, isLoggingIn,loginWithGoogle } = useUserAuthStore();
   const navigate = useNavigate();
-
-  
+ 
+  useEffect(() => {
+    const storedEmail=localStorage.getItem("email");
+    setFormData({...formData, email: storedEmail || "" });
+  },[]
+) 
 
   const validateForm = () => {
     if (!formData.email.trim()) {
@@ -40,6 +45,8 @@ export function UserLogin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
+      
+      localStorage.setItem("email", formData.email);
       try {
         await login(formData);
         toast.success("Login successful!");
@@ -51,7 +58,9 @@ export function UserLogin() {
   };
 
   const handleGoogleLogin = () => {
-    toast.info("Google login will be implemented soon!");
+    toast.success("Login with Google successful!");
+    loginWithGoogle();
+    
   };
 
   return (
