@@ -11,10 +11,22 @@ const Cart = () => {
     const changeQuantity = async (productId, quantity) => {
         setLoading(true)
         try{
-            const response = await axiosInstance.patch(`/modifyQty/${productId}`, {quantity})
+            const response = await axiosInstance.put(`cart/modifyQty/${productId}`, {quantity})
             setCart(response.data.cart)
         }catch(err){
             setError("Failed to change quantity")
+        }finally{
+            setLoading(false)
+        }
+    }
+
+    const removeProduct = async (productId) => {
+        setLoading(true)
+        try{
+            const response = await axiosInstance.delete(`cart/remove/${productId}`)
+            setCart(response.data.cart)
+        }catch(err){
+            setError("Failed to remove product")
         }finally{
             setLoading(false)
         }
@@ -45,10 +57,10 @@ const Cart = () => {
     }
 
   return (
-    <div>
+    <div className='bg-gray-100 p-4'>
         {cart && cart.products.length > 0 ? (
             cart.products.map((productEnrty) =>(
-                <CartProduct key={productEnrty.productId} product={productEnrty.productId} changeQuantity={changeQuantity}/>
+                <CartProduct key={productEnrty.productId} product={productEnrty.productId} quantity={productEnrty.quantity} changeQuantity={changeQuantity} removeProduct={removeProduct}/>
             ))
         ):(<p>Your cart is empty</p>)}
     </div>

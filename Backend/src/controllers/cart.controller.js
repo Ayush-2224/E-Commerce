@@ -2,6 +2,30 @@ import Cart, { productEntrySchema } from '../models/cart.model.js';
 import HttpError from '../models/http-error.js';
 import Product from '../models/product.model.js';
 
+async function fetfetchCartWithDetails(userId) {
+        const cart = await Cart.findOne({ userId })
+  .populate({
+    path: "products.productId",
+    select: "imageUrl title price mrp seller",
+    populate: {
+      path: "seller",
+      select: "username"
+    }
+  });
+  
+  if (cart && Array.isArray(cart.products)) {
+      cart.products = cart.products.map(entry => {
+          if (entry.productId && Array.isArray(entry.productId.imageUrl)) {
+              entry.productId.imageUrl = entry.productId.imageUrl[0];
+            }
+            console.log(entry);
+            return entry;
+        });
+    }
+
+    return cart;
+}
+
 const addProductToCart = async (req, res, next) => {
     const { quantity = 1 } = req.body;
     const {productId} = req.params;
@@ -34,24 +58,8 @@ const addProductToCart = async (req, res, next) => {
 const getCart = async (req, res, next) => {
     const userId = req.userData._id;
     try {
-        const cart = await Cart.findOne({ userId })
-  .populate({
-    path: "products.productId",
-    select: "imageUrl title price mrp seller",
-    populate: {
-      path: "seller",
-      select: "username"
-    }
-  });
-
-        if (cart && Array.isArray(cart.products)) {
-            cart.products = cart.products.map(entry => {
-              if (entry.productId && Array.isArray(entry.productId.imageUrl)) {
-                entry.productId.imageUrl = entry.productId.imageUrl[0];
-              }
-              return entry;
-            });
-          }
+        const cart = await fetfetchCartWithDetails(userId)
+    console.log(cart);
         res.status(200).json(cart);
     } catch (error) {
         return next(new HttpError("Failed to get cart", 500));
@@ -66,6 +74,8 @@ const removeProductFromCart = async (req, res, next) => {
         
         cart.products=cart.products.filter(p=>p.productId.toString() !== productId);
         await cart.save();
+
+        const updatedCart = await fetfetchCartWithDetails(userId)
         res.status(200).json({message: "Product removed from cart", cart});
     } catch (error) {
         return next(new HttpError("Failed to remove product from cart", 500));
@@ -76,19 +86,28 @@ const changeQuantityFromCart =async(req,res,next)=>{
     const {productId} = req.params;
     const {quantity}=req.body;
     const userId = req.userData._id;
+    console.log(productId);
+    
     try {
         const cart = await Cart.findOne({userId});
         
         const product = cart.products.find(
             (element) => element.productId.toString() === productId
-          );
-          if(!product){
+        );
+        console.log(product);
+        if(!product){
             return next(new HttpError("Product not found", 404));
-          }
+        }
           product.quantity=quantity;
           await cart.save();
-        res.status(200).json({message: "Product quantity changed", cart});
+        
+          const updatedCart = await fetfetchCartWithDetails(userId)
+          res.status(200).json({
+            message: "Quantity updated successfully",
+            cart: updatedCart
+          });
     } catch (error) {
+        console.log(error);
         return next(new HttpError("Failed to change quantity of  product ", 500));
     }
 }
