@@ -231,7 +231,7 @@ const getProductsBySeller = async (req,res,next)=>{
     }
 }   
 
-export const searchProducts = async (req, res, next) => {
+const searchProducts = async (req, res, next) => {
   const query = req.query.q;
 
 
