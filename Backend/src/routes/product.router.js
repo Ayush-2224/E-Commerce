@@ -1,11 +1,10 @@
 import express from 'express';
 import multer from 'multer';
-import { addProduct, getProductById, getProductsByCategory, getProductsBySeller ,editProduct} from '../controllers/product.controller.js';
+import { addProduct, getProductById, getProductsByCategory, getProductsBySeller ,editProduct,searchProducts} from '../controllers/product.controller.js';
 import verifySellerAuthentication from '../middleware/sellerAuth.middleware.js';
 import fileUpload from '../middleware/file-upload.js';
 
 const router = express.Router();
-
 
 
 // Product routes
@@ -17,5 +16,6 @@ router.get('/getProduct/:id',getProductById)
 router.get('/filterProducts/:category',getProductsByCategory)
 router.put('/editProduct/:id',verifySellerAuthentication,editProduct)
 router.get('/getProductsBySeller',verifySellerAuthentication,getProductsBySeller)
+router.get('/search',verifySellerAuthentication,searchProducts)
 
 export default router;

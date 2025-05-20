@@ -231,5 +231,41 @@ const getProductsBySeller = async (req,res,next)=>{
     }
 }   
 
+export const searchProducts = async (req, res, next) => {
+  const query = req.query.q;
 
-export { addProduct, getProductById, getProductsByCategory, editProduct, getProductsBySeller };
+
+  if (!query) {
+    return next(new HttpError('Search query is required.', 400));
+  }
+
+  try {
+    const results = await Product.aggregate([
+      {
+        $search: {
+          index: 'default',
+          text: {
+            query,
+            path: ['title', 'category'], // Include other string fields as needed
+            fuzzy: {
+              maxEdits: 2,
+              prefixLength: 1,
+              maxExpansions: 50,
+            },
+          },
+        },
+      },
+      {
+        $limit: 10,
+      },
+    ]);
+
+    return res.status(200).json(results);
+  } catch (error) {
+    console.error('Search Error:', error);
+    return next(new HttpError('Internal Server Error', 500));
+  }
+};
+
+
+export { addProduct, getProductById, getProductsByCategory, editProduct, getProductsBySeller,searchProducts };
