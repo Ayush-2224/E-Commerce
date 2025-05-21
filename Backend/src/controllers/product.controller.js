@@ -105,10 +105,12 @@ const getProductById = async (req,res,next)=>{
     try {
         const {id}=req.params
         const product=await Product.findById(id)
+        console.log(product);
         if(!product){
             return next(new HttpError("Product not found",404))
         }
-        return res.status(200).json({product})
+        
+        return res.status(200).json(product)
     } catch (error) {
         return next(new HttpError("Internal Server Error",500))
     }
@@ -122,7 +124,7 @@ const getProductsByCategory = async (req,res,next)=>{
         if(!products){
             return next(new HttpError("Products not found",404))
         }
-        return res.status(200).json({products})
+        return res.status(200).json(products)
     } catch (error) {
         return next(new HttpError("Internal Server Error",500))
     }

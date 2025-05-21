@@ -8,6 +8,7 @@ import { UserLogin } from './pages/userlogin';
 import SellerSignup from './pages/sellerSignup';
 import SellerLogin from './pages/sellerLogin';
 import AuthPages from './util/AuthPages';
+import Product from './pages/product';
 import NavPages from './util/NavPages';
 import { Toaster } from 'react-hot-toast';
 import Cart from './pages/cart';
@@ -18,6 +19,8 @@ function App() {
     <Routes>
     <Route element={<NavPages/>}>
       <Route path='/cart' element={<Cart/>} />
+      <Route path="product/:productId" element={<Product />} />
+
     </Route>
 
     {/* Auth pages without Nav + Footer */}
