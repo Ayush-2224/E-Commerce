@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const PaymentSchema = mongoose.Schema({
     type:{
         type: String,
-        enum: ["Receive, Refund"],
+        enum: ["Receive", "Refunded"],
         required: true
     },
     userId:{

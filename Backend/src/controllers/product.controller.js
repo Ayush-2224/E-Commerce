@@ -102,9 +102,12 @@ const addProduct = async (req, res, next) => {
 }
 
 const getProductById = async (req,res,next)=>{
+    console.log("getProductById")
     try {
         const {id}=req.params
+        console.log(id)
         const product=await Product.findById(id)
+        console.log(product)
         if(!product){
             return next(new HttpError("Product not found",404))
         }

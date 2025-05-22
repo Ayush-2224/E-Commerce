@@ -16,6 +16,6 @@ router.get('/getProduct/:id',getProductById)
 router.get('/filterProducts/:category',getProductsByCategory)
 router.put('/editProduct/:id',verifySellerAuthentication,editProduct)
 router.get('/getProductsBySeller',verifySellerAuthentication,getProductsBySeller)
-router.get('/search',verifySellerAuthentication,searchProducts)
+router.get('/search',searchProducts)
 
 export default router;
