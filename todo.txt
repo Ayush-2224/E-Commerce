@@ -13,3 +13,6 @@ google login -- (user)
 
 
 Add address in user model
+
+Mail after payment confirmation
+fix refund things and use hooks instead of using in direct code for updates

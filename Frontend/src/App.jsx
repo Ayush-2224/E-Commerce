@@ -11,7 +11,9 @@ import AuthPages from './util/AuthPages';
 import Product from './pages/product';
 import NavPages from './util/NavPages';
 import { Toaster } from 'react-hot-toast';
+import Order from './pages/order';
 import Cart from './pages/cart';
+import BuyNowPage from './pages/home';
 function App() {
   
   return (
@@ -21,6 +23,8 @@ function App() {
       <Route path='/cart' element={<Cart/>} />
       <Route path="product/:productId" element={<Product />} />
 
+      <Route path='/order' element={<Order/>} />
+      <Route path="/buy/:productId" element={<BuyNowPage/>} />
     </Route>
 
     {/* Auth pages without Nav + Footer */}

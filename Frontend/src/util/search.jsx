@@ -29,7 +29,7 @@ const fetchResults = async()=>{
 }
   return (
     <div>
-      // product page code;
+       {/* product page code; */}
     </div>
   )
 }
