@@ -26,7 +26,7 @@ const ProductImageGallery = ({ images , productId }) => {
 
 
     const buyNowHandler = async () => {
-        navigate(`/checkout/${productId}`);
+        navigate(`/buy/${productId}`);
     }
 
     useEffect(() => {

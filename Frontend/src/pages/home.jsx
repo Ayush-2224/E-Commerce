@@ -9,11 +9,11 @@ const fetchProduct = async () => {
     console.log("Fetching product with ID:", productId);
       try {
         const res =  await axiosInstance.get(`product/getProduct/${productId}`);
-        console.log("Product fetched successfully:", res.data.product);
-        if(!res.data.product) {
+        console.log("Product fetched successfully:", res.data);
+        if(!res.data) {
           throw new Error("Product not found");
         }
-        setProduct(res.data.product);
+        setProduct(res.data);
       } catch (err) {
         console.error("Error fetching product:", err);
         alert("Product not found");
