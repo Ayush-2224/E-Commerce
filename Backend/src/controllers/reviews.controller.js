@@ -57,7 +57,7 @@ const getReviews = async (req, res, next) =>{
                         .skip(offset)
                         .limit(limit)
                         .populate("userId", "username profilePic")
-                        .select("review rating userId updatedAt -_id");
+                        .select("review rating userId updatedAt");
 
         res.json(reviews)
     }catch(error){

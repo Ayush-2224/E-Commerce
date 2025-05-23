@@ -14,6 +14,7 @@ import { Toaster } from 'react-hot-toast';
 import Order from './pages/order';
 import Cart from './pages/cart';
 import BuyNowPage from './pages/home';
+import ProductReviews from './pages/ProductReviews';
 function App() {
   
   return (
@@ -25,6 +26,7 @@ function App() {
 
       <Route path='/order' element={<Order/>} />
       <Route path="/buy/:productId" element={<BuyNowPage/>} />
+      <Route path="/reviews/:productId" element={<ProductReviews/>} />
     </Route>
 
     {/* Auth pages without Nav + Footer */}
