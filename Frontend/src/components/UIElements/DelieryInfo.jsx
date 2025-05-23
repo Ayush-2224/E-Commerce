@@ -3,11 +3,17 @@ import React, { useState, useRef } from "react";
 const DeliveryInfo = () => {
   const [pincode, setPincode] = useState("815301");
   const [isEditing, setIsEditing] = useState(false);
+  const [pincodeError, setPincodeError] = useState(false);
   const inputRef = useRef(null);
 
   const handleCheck = () => {
+
+    if (!/^\d{6}$/.test(pincode)) {
+      setPincodeError(true);
+      return;
+    }
+    setPincodeError(false);
     setIsEditing(false);
-    inputRef.current?.blur(); // removes cursor/focus
     // Add API call or validation here if needed
   };
 
@@ -18,14 +24,14 @@ const DeliveryInfo = () => {
   };
 
   return (
-    <div className="text-sm font-sans text-gray-700">
-      <div className="flex items-center gap-2">
-        <span className="text-gray-500">Delivery</span>
+    <div className="text-sm font-sans text-gray-700  mb-5">
+      <div className="flex items-center">
+        <span className="font-medium text-gray-500 w-20">Delivery</span>
 
         {isEditing ? (
           <>
             <input
-              type="text"
+              type="number"
               ref={inputRef}
               value={pincode}
               onChange={(e) => setPincode(e.target.value)}
@@ -34,7 +40,7 @@ const DeliveryInfo = () => {
               className="border-b border-blue-500 focus:outline-none text-black font-semibold w-20"
             />
             <button
-              className="text-blue-600 text-sm font-medium hover:underline"
+              className="text-blue-600 text-sm font-medium hover:underline ml-2"
               onClick={handleCheck}
             >
               Check
@@ -44,7 +50,7 @@ const DeliveryInfo = () => {
           <>
             <span className="font-semibold text-black">{pincode}</span>
             <button
-              className="text-blue-600 text-sm font-medium hover:underline"
+              className="text-blue-600 text-sm font-medium hover:underline ml-3.5"
               onClick={() => setIsEditing(true)}
             >
               Change
@@ -52,8 +58,10 @@ const DeliveryInfo = () => {
           </>
         )}
       </div>
-
-      <div className="mt-1 ml-16">
+        {pincodeError && (
+        <div className="ml-20 mt-1 text-red-500 text-xs">Invalid Pincode</div>
+      )}
+      <div className="mt-1 ml-20">
         <span>Delivery by </span>
         <span className="font-medium">23 May, Friday</span>
         <span className="mx-1">|</span>

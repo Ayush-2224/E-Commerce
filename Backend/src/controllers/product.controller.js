@@ -105,7 +105,6 @@ const getProductById = async (req,res,next)=>{
     try {
         const {id}=req.params
         const product=await Product.findById(id)
-        console.log(product);
         if(!product){
             return next(new HttpError("Product not found",404))
         }

@@ -1,6 +1,9 @@
 import mongoose from "mongoose";
 
 const ReviewSchema = mongoose.Schema({
+    heading:{
+        type:String
+    },
     review:{
         type:String,
     },

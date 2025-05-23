@@ -1,15 +1,36 @@
 import mongoose from "mongoose";
 import HttpError from "./http-error.js";
-const descriptionElementSchema = mongoose.Schema({
-    type:{
-        type:String,
-        enum: ["text", "image"],
-        required:true
+const descriptionBlockSchema = mongoose.Schema({
+  heading: {
+    type: String,
+    required: false
+  },
+  text: {
+    type: String,
+    required: false
+  },
+  image: {
+    type: String,
+    required: false
+  }
+}, { _id: false });
+
+const specificationEntrySchema = mongoose.Schema({
+    key:{
+        type: String,
+        required: true
     },
-    data:{
-        type:String,
+    value:{
+        type: String,
         required: true
     }
+}, {_id: false});
+
+const specificationGroupSchema = mongoose.Schema({
+    heading:{
+        type: String
+    },
+    specs: [specificationEntrySchema]
 }, {_id: false})
 
 const productSchema = mongoose.Schema({
@@ -38,11 +59,11 @@ const productSchema = mongoose.Schema({
         min:0  
     },
     description: {
-        type: [descriptionElementSchema]
+        type: [descriptionBlockSchema]
     },
     specifications: {
-        type: String
-    },
+        type: [specificationGroupSchema]
+    },  
     seller: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Seller",

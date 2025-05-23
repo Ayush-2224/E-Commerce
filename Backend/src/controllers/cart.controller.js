@@ -41,6 +41,7 @@ const addProductToCart = async (req, res, next) => {
         if(product.quantity<quantity){
             return next(new HttpError("Quantity not available", 404));
         }
+        
         const productEntry = {
             productId,
             quantity
@@ -53,6 +54,33 @@ const addProductToCart = async (req, res, next) => {
         return next(new HttpError("Failed to add product to cart", 500));
     }
 }
+
+const checkProductinCart = async (req, res, next) => {
+    const { productId } = req.params;
+    const userId = req.userData._id;
+
+    try {
+        const cart = await Cart.findOne({ userId });
+
+        if (!cart) {
+            return res.status(201).json({ message: "Cart does not exist" });
+        }
+
+        const productExists = cart.products.some(
+            item => item.productId.toString() === productId
+        );
+
+        if (!productExists) {
+            return res.status(201).json({ message: "Product is not in cart" });
+        }
+
+        res.status(200).json({ message: "Product is already in cart" });
+
+    } catch (error) {
+        return next(new HttpError("Failed to check product in cart", 500));
+    }
+};
+
 
 const getCart = async (req, res, next) => {
     const userId = req.userData._id;
@@ -115,4 +143,4 @@ const changeQuantityFromCart =async(req,res,next)=>{
 }
 
 
-export {addProductToCart,getCart,removeProductFromCart,changeQuantityFromCart}
+export {addProductToCart,getCart,removeProductFromCart,changeQuantityFromCart, checkProductinCart}
