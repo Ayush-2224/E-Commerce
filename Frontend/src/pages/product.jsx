@@ -22,7 +22,7 @@ const Product = () => {
     const fetchReviews = async () => {
         try {
             setLoading(true);
-            const limit = 8; // adjust max number as needed
+            const limit = 4; // adjust max number as needed
             const response = await axiosInstance(`/review/get/${productId}/${sortBy}/${sortOrder}`, {
                 params: {
                     offset: 0,
@@ -66,7 +66,7 @@ const Product = () => {
         }
     };
     const handleClick = () => {
-        navigate(`/product/${productId}/rate`);
+        navigate(`/product/${productId}/review`);
     }
     useEffect(() => {
         const fetchProduct = async () => {
@@ -98,15 +98,13 @@ const Product = () => {
     return (
         <div className=''>
 
-            <div class="bg-white p-4 flex flex-col md:flex-row gap-4">
+            <div class="bg-white p-4 flex flex-col md:flex-row gap-10">
 
                 {error && <p className="text-red-500 text-center pb-4">{error}</p>} {/* Show operational errors */}
-                <div className='flex flex-col gap-4 w-full md:sticky md:top-10 h-fit'>
+                <div className='flex flex-col gap-4 md:sticky md:top-10 h-fit'>
                     <ProductImageGallery images={product.imageUrl} productId={productId} />
-                    
-
                 </div>
-                <div>
+                <div className='flex-1'>
                     <div className='text-xl mb-2'>{product.title}</div>
                     <div className="inline-flex text-xs items-center font-medium bg-green-600 text-white px-2 py-1 rounded">
                         {product.rating.toFixed(1)}

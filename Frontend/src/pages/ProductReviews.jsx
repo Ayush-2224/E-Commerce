@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom';
 import { axiosInstance } from '../lib/axios';
 import HorizontalLine from '../components/UIElements/HorizontalLine';
 import { useNavigate } from 'react-router-dom';
+import LoadingSpinner from '../components/UIElements/LoadingSpinner';
 const ProductReviews = () => {
     const { productId } = useParams();
     const [reviews, setReviews] = useState([]);
@@ -13,9 +14,9 @@ const ProductReviews = () => {
     const [loading, setLoading] = useState(false);
     const observerRef = useRef()
 
-     const [sortBy, setSortBy] = useState("rating");
+    const [sortBy, setSortBy] = useState("rating");
     const [sortOrder, setSortOrder] = useState(-1);
-    const limit = 8
+    const limit = 5
 
     const fetchReviews = async () => {
         try {
@@ -63,7 +64,7 @@ const ProductReviews = () => {
 
     useEffect(() => {
         fetchReviews();
-    }, [productId, sortBy, sortOrder, offset]);
+    }, [productId, sortBy, sortOrder]);
 
 
     return (
@@ -128,7 +129,7 @@ const ProductReviews = () => {
                     );
                 })
             )}
-            {loading && <p className='text-center text-gray-400 '>Loading more reviews...</p>}
+            {loading && <LoadingSpinner centered/>}
         </div>
     )
 }

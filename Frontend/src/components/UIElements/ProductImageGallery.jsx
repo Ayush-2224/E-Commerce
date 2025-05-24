@@ -62,11 +62,13 @@ const ProductImageGallery = ({ images , productId }) => {
       </div>
 
       <div className="flex flex-col items-center">
-  <img
-    src={selectedImage}
-    alt="Selected product"
-    className="h-96 w-[480px] object-contain border p-5 border-gray-100 rounded"
-  />
+   <div className="h-96 w-[380px] border border-gray-100 rounded p-5 flex items-center justify-center bg-white">
+    <img
+      src={selectedImage}
+      alt="Selected product"
+      className="max-h-full max-w-full object-contain"
+    />
+  </div>
   <div className="flex gap-3 mt-4 justify-center">
     <button className="flex items-center gap-2 md:px-6 px-2 py-2 bg-[#ffa41c] text-white font-semibold cursor-pointer hover:bg-[#e68f17] rounded"
     onClick={addtoCartHandler}>

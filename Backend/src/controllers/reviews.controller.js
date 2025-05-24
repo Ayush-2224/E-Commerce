@@ -39,12 +39,13 @@ const addReview = async (req, res, next) => {
         product.rating = await calculateOverallRating(productId);
         await product.save();
 
-        res.status(201).json({message: "Review added successfully"});
+        res.status(201).json(newReview);
     }catch(error){
         console.log("add review error: ", error);
         return next(new HttpError("An error occurred while adding the review", 500));
     }
 }
+
 
 const getReviews = async (req, res, next) =>{
     try{
@@ -65,6 +66,22 @@ const getReviews = async (req, res, next) =>{
         return next(new HttpError("An error occurred while getting the reviews", 500));
     }
 }
+
+const getUserReviewForProduct = async (req, res, next) => {
+    const userId = req.userData._id
+    const {productId} = req.params
+    try{
+        const review = await Review.findOne({userId, productId})
+        console.log(review);
+        
+        res.status(201).json(review)
+    }catch(error){
+        console.log(error);
+        
+        return next(new HttpError("Error fetching review", 500))
+    }
+};
+
 
 const changeReview = async (req, res, next) => {
     try{
@@ -121,6 +138,7 @@ const deleteReview = async (req, res, next) =>{
 
 const getUserReviews = async (req, res, next) => {
     const userId = req.userData._id;
+    
     try {
         const reviews = await Review.find({userId})
             .select("-_id"); 
@@ -162,4 +180,4 @@ const getRatingBreakdown = async (req, res, next) =>{
     }
 }
 
-export {addReview, getReviews, changeReview, deleteReview, getUserReviews, getRatingBreakdown}
+export {addReview, getReviews, changeReview, deleteReview, getUserReviews, getRatingBreakdown, getUserReviewForProduct}

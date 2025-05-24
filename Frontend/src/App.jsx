@@ -15,6 +15,7 @@ import Order from './pages/order';
 import Cart from './pages/cart';
 import BuyNowPage from './pages/home';
 import ProductReviews from './pages/ProductReviews';
+import Review from './pages/Review';
 function App() {
   
   return (
@@ -27,6 +28,7 @@ function App() {
       <Route path='/order' element={<Order/>} />
       <Route path="/buy/:productId" element={<BuyNowPage/>} />
       <Route path="/reviews/:productId" element={<ProductReviews/>} />
+      <Route path="/product/:productId/review" element={<Review/>} />
     </Route>
 
     {/* Auth pages without Nav + Footer */}
