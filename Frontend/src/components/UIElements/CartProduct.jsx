@@ -1,5 +1,5 @@
 import React from 'react'
-
+import { Link } from 'react-router-dom'
 const CartProduct = ({ product, changeQuantity, quantity, removeProduct }) => {
   // send quantity=0 to “remove”
 
@@ -7,19 +7,23 @@ const CartProduct = ({ product, changeQuantity, quantity, removeProduct }) => {
     <div className="bg-white rounded-xl shadow-sm p-4 mb-6 grid grid-cols-[auto_1fr] grid-rows-[auto_auto] gap-4">
       {/* Left: Image */}
       <div className="row-span-1">
+        <Link to={`/product/${product._id}`}>
         <img
           src={product.imageUrl}
           alt={product.title}
           className="w-24 h-24 object-contain"
         />
+        </Link>
       </div>
 
       {/* Right: Details (title, seller, price, offers, delivery) */}
       <div className="row-span-1 space-y-2">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">
+          <Link to={`/product/${product._id}`}>
+          <h3 className="text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors duration-200">
             {product.title}
           </h3>
+          </Link>
           <p className="text-sm text-gray-500">
             Seller:{' '}
             <span className="font-medium">{product.seller.username}</span>
