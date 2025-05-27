@@ -3,6 +3,8 @@ import cloudinary, { uploadToCloudinary } from "../lib/cloudinary.js";
 import HttpError from "../models/http-error.js";
 import generateTokenUser from "../lib/user.generateToken.js";
 import passport from "../Auth/google.js";
+import jwt from "jsonwebtoken";
+import transporter from "../lib/nodeMailer.js";
 const signup = async(req,res,next)=>{
     try {
         const {username,password,email}=req.body;
@@ -114,5 +116,46 @@ const checkAuth=async(req,res,next)=>{
       }
     }
   ];
-  
-export {signup,login,logout,checkAuth,googleAuth,googleCallback}
+
+  const forgotPassword = async (req,res,next)=>{
+    const {email}=req.body
+   try {
+     const user = await User.findOne({email})
+     if(!user){
+         return next(new HttpError("User not found", 404));
+     }
+ 
+     const JWT_SECRET = process.env.JWT_SECRET_USER;
+     const token =jwt.sign({ email }, JWT_SECRET, { expiresIn: "15m" });
+     const resetURL = `http://localhost:3000/user/reset-password/${token}`;
+ 
+     await transporter.sendMail({
+       to: email,
+       subject: "Password Reset",
+       html: `<p>Click <a href="${resetURL}">here</a> to reset your password</p>`,
+     });
+     res.json({ msg: "Reset email sent" });
+ 
+   } catch (error) {
+     console.log("forgotPassword error", error);
+     return next(new HttpError("ISE", 400));
+   }
+
+  }
+
+  const resetPassword = async (req, res) => {
+    const {token,password} = req.body;
+    try {
+        const {email}=jwt.verify(token, process.env.JWT_SECRET_USER);
+        const user = await User.findOne({email});
+        if(!user) return next(new HttpError("User not found", 404));
+        user.password = password;
+        await user.save();
+        
+        res.status(200).json({message:"Password reset successfully"});
+    } catch (error) {
+        console.log("resetPassword error", error);
+        return next(new HttpError("ISE", 400));
+    }
+  }
+export {signup,login,logout,checkAuth,googleAuth,googleCallback,forgotPassword,resetPassword}

@@ -1,18 +1,9 @@
 
-Ayaman:
-image in add product aur profile --
-Seller User Secret key handel//
-quantity check manage anand mrp>=price // 
-discription handle
-Ayush:
-payment implement Refund --
 
-Brand add in product//
 Profile edit  in auth and Seller 
-google login -- (user)
-
-
 Add address in user model
 
 Mail after payment confirmation
 fix refund things and use hooks instead of using in direct code for updates
+
+
