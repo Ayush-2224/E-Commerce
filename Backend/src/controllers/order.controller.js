@@ -9,12 +9,12 @@ import crypto from 'crypto'
 import Payment from "../models/Payment.model.js";
 const createOrderbyProductId = async (req, res, next) => {
        const {productId} = req.params;
-       console.log("createOrderbyProductId hit with productId:", req.params.productId);
+      
 
     try {
        
     const product = await Product.findById(productId);
-    console.log("product : ",product);
+   
     if(!product){
         return next(new HttpError("Product not found", 404));
     }
@@ -33,6 +33,8 @@ const createOrderbyProductId = async (req, res, next) => {
       razorpayOrder,
       key: process.env.RAZORPAY_KEY_ID,
       product,
+      username:req.userData.username,
+      email:req.userData.email,
     });
   }
   catch (error) {
@@ -50,11 +52,7 @@ const verifyAndConfirm = async(req,res,next)=>{
     productId,
   } = req.body;
 
-  console.log("Received:", {
-  razorpay_order_id,
-  razorpay_payment_id,
-  razorpay_signature,
-});
+  
 
   try {
     const hmac = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET);
@@ -171,15 +169,22 @@ const createOrderbyCartId = async (req, res, next) => {
   
 
 const getOrders = async (req, res, next) => {
-    const userId = req.userData._id;
-    try {
-        const orders = await Order.find({userId});
-        res.status(200).json({orders});
-    }
-    catch(error){
-        return next(new HttpError("Failed to get orders", 500));
-    }
-}
+  const userId = req.userData._id;
+
+  try {
+    const orders = await Order.find({ userId })
+      .populate({
+        path: "productId",
+        select: "title brand imageUrl"
+      })
+      .lean();
+
+    res.status(200).json({ orders });
+  } catch (error) {
+    return next(new HttpError("Failed to get orders", 500));
+  }
+};
+
 
 const refund = async (transactionId) => {
   try {
