@@ -18,12 +18,12 @@ const ProductReviews = () => {
     const [sortOrder, setSortOrder] = useState(-1);
     const limit = 5
 
-    const fetchReviews = async () => {
+    const fetchReviews = async (currentOffset = offset) => {
         try {
             setLoading(true);
             const response = await axiosInstance(`/review/get/${productId}/${sortBy}/${sortOrder}`, {
                 params: {
-                    offset,
+                    offset: currentOffset,
                     limit,
                 },
             });
@@ -60,12 +60,9 @@ const ProductReviews = () => {
         setOffset(0);
         setReviews([]);
         setHasMore(true);
-    }, [productId, sortBy, sortOrder]);
+        fetchReviews(0);
 
-    useEffect(() => {
-        fetchReviews();
     }, [productId, sortBy, sortOrder]);
-
 
     return (
         <div className="p-4">
