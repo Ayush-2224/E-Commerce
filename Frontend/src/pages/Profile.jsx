@@ -168,8 +168,9 @@ useEffect(() => {
 
       {/* Navigation Links */}
       <div className="mt-6 flex gap-6 text-blue-600 font-medium">
-        <Link to="/orders" className="hover:underline">My Orders</Link>
+        <Link to="/order" className="hover:underline">My Orders</Link>
         <Link to="/cart" className="hover:underline">My Cart</Link>
+        <Link to="/forgot-password" className="hover:underline">Forgot Pasword</Link>
       </div>
     </div>
   );

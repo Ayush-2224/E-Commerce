@@ -157,7 +157,7 @@ function Order() {
                                   {product.title}
                                 </h3>
                                 <p className="text-sm text-gray-600 mb-3">
-                                  Brand: {product.brand}
+                                  Brand: {product.brand || "Unknown Brand"}
                                 </p>
 
                                 {/* Price (show once per order) */}
