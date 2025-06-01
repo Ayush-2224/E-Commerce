@@ -61,7 +61,7 @@ const login = async(req,res,next)=>{
         return res.status(400).json({message: "Invalid credentials password"});
     }
     
-    generateToken(seller._id, res);
+    generateTokenSeller(seller._id, res);
     return res.status(200).json({
         _id: seller._id,
         username: seller.username,
