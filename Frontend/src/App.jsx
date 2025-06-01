@@ -18,6 +18,8 @@ import ProductReviews from './pages/ProductReviews';
 import Review from './pages/Review';
 import Profile from './pages/Profile';
 import Search from './util/search';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 function App() {
   
   return (
@@ -32,6 +34,9 @@ function App() {
       <Route path="/reviews/:productId" element={<ProductReviews/>} />
       <Route path="/product/:productId/review" element={<Review/>} />
       <Route path="/user/profile" element={<Profile/>} />
+      <Route path="user/forget-password" element={<ForgotPassword/>}/>
+      <Route path="user/reset-password/:token" element={<ResetPassword/>}/>
+
     </Route>
 
     {/* Auth pages without Nav + Footer */}

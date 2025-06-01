@@ -6,9 +6,10 @@ import passport from "../Auth/google.js";
 import jwt from "jsonwebtoken";
 import transporter from "../lib/nodeMailer.js";
 const signup = async(req,res,next)=>{
+    console.log("called");
     try {
-        const {username,password,email}=req.body;
-        if([email,username,password].some((field)=>
+        const {username,password,email,address}=req.body;
+        if([email,username,password,address].some((field)=>
                 field?.trim()==="")
            ){
             return res.status(401).json({message:`${field} is required`});
@@ -28,11 +29,13 @@ const signup = async(req,res,next)=>{
             username,
             email,
             password,   
-            profilePic:imageUrl
+            profilePic:imageUrl,
+            address
         })
 
         if(!newUser) return res.status(500).json({message:"Invalid User Data"})
         await newUser.save()
+    console.log("saved")
     // generate token
     generateTokenUser(newUser._id,res)
         return res.status(200).json({
@@ -127,9 +130,10 @@ const checkAuth=async(req,res,next)=>{
  
      const JWT_SECRET = process.env.JWT_SECRET_USER;
      const token =jwt.sign({ email }, JWT_SECRET, { expiresIn: "15m" });
-     const resetURL = `http://localhost:3000/user/reset-password/${token}`;
+     const resetURL = `http://localhost:5173/user/reset-password/${token}`;
  
      await transporter.sendMail({
+         from: process.env.MAIL_USER,
        to: email,
        subject: "Password Reset",
        html: `<p>Click <a href="${resetURL}">here</a> to reset your password</p>`,
@@ -145,6 +149,7 @@ const checkAuth=async(req,res,next)=>{
 
   const resetPassword = async (req, res) => {
     const {token,password} = req.body;
+    
     try {
         const {email}=jwt.verify(token, process.env.JWT_SECRET_USER);
         const user = await User.findOne({email});

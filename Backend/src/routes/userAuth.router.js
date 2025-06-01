@@ -10,7 +10,7 @@ router.route("/logout").get(userLogout)
 router.route("/userInfo").get(verifyUserAuthentication,userCheckAuth)
 router.get('/auth/google', googleAuth);
 router.get('/auth/google/callback', googleCallback);
-router.post('/forgot-password', forgotPassword);
+router.post('/forget-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 router.post('/edit-profile', verifyUserAuthentication, fileUpload.single("profilePic"), editProfile);
 

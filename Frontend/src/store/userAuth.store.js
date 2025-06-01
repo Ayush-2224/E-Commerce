@@ -85,6 +85,21 @@ export const useUserAuthStore = create((set,get) => ({
   loginWithGoogle: () => {
     window.location.href = `http://localhost:5001/api/user/auth/google`;
   },
+  
+  forgetPassword:async (email)=>{
+       try {
+        const res=axiosInstance.post(`user/forget-password`,{email});
+       } catch (error) {
+        console.log(error);
+       }
+  },
+  resetPassword: async(password,token)=>{
+      try {
+        const res=axiosInstance.post('/user/reset-password',{password,token})
+      } catch (error) {
+        console.log(error);
+      }
+  }
 
  
 }))

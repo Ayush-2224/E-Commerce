@@ -8,3 +8,4 @@ fix refund things and use hooks instead of using in direct code for updates
 
 
 check login and use checkauth
+old product not getting purchased
