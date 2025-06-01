@@ -12,6 +12,49 @@ const Cart = () => {
     const navigate = useNavigate();
     const [totalPrice, setTotalPrice] = useState(0);
     const [totalMrp, setTotalMrp] = useState(0);
+    const purchaseHandler = async () => {
+        if (!cart || !cart.products || cart.products.length === 0) {
+            toast.error("Your cart is empty!");
+            return;
+        }
+      try {  
+        const { data } = await axiosInstance.post(`/order/cobci`);
+const { razorpayOrder, key, username, email, products } = data;
+
+
+        const options = {
+                key,
+                amount: razorpayOrder.amount,
+                currency: "INR",
+                name: "My Store",
+                description: "Product Purchase",
+                order_id: razorpayOrder.id,
+                handler: async function (response) {
+                  await axiosInstance.post("/order/verify", {
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_signature: response.razorpay_signature,
+                    isCartOrder: true,
+                    
+                  });
+        
+                  alert("Payment success! Order placed.");
+                },
+                prefill: {
+                  name: username , // Replace with real user name
+                  email: email, // Replace with real user email
+                },
+                theme: { color: "#3399cc" },
+              };
+         const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error("Error:", err);
+      alert("Could not start payment");
+    }
+  };
+
+
     const changeQuantity = async (productId, quantity) => {
         setLoading(true);
         setError(null); 
@@ -148,7 +191,7 @@ const Cart = () => {
                             <button
   className="w-full py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer disabled:cursor-not-allowed focus:ring-indigo-500 transition duration-300 ease-in-out disabled:bg-indigo-400 shadow-md"
   disabled={totalMrp === 0}
-  onClick={() => navigate('/order')}
+  onClick={purchaseHandler}
 >
   Place Order
 </button>

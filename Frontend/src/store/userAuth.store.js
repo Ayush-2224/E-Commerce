@@ -10,7 +10,6 @@ export const useUserAuthStore = create((set,get) => ({
     isCheckingAuth:true,
     checkAuth: async()=>{
         try {
-            // set({isCheckingAuth:true})
             const response =await axiosInstance.get('/user/userInfo')
             set({authUser:response.data})
         } catch (error) {
@@ -65,22 +64,24 @@ export const useUserAuthStore = create((set,get) => ({
             set({isLoggingIn:false})
         }
     },
-    // updateProfile: async(formData)=>{
-    //     set({isUpdatingProfile:true})
-    //     try {
-    //         const response = await axiosInstance.put('/auth/update-profile',formData)
-    //         set({authUser:response.data})
-    //         toast.success("Profile updated successfully")
-    //     } catch (error) {``
-    //         console.log(error)
-    //         toast.error(error.response.data.message)
-    //     }
-    //     finally{
-    //         set({isUpdatingProfile:false})
-    //     }
-    // },
-    // ,
-    
+    updateProfile: async(formData)=>{
+        set({isUpdatingProfile:true})
+        try {
+            const response = await axiosInstance.post('/user/edit-profile',formData)
+            set({authUser:response.data})
+            toast.success("Profile updated successfully")
+            const updatedUser= response.data.updatedUserData
+            set({ authUser: updatedUser });
+            return {updatedUser}
+        } catch (error) {
+            console.log(error)
+            toast.error(error.response.data.message)
+        }
+        finally{
+            set({isUpdatingProfile:false})
+        }
+    },
+
   loginWithGoogle: () => {
     window.location.href = `http://localhost:5001/api/user/auth/google`;
   },

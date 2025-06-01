@@ -26,6 +26,11 @@ const userSchema =mongoose.Schema({
      profilePic:{
         type:String,
         default:""
+     },
+     address:{
+      type:String,
+      required:true,
+      trim:true   
      }
 },{timestamps:true})
 
