@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { signup as userSignup,login as userLogin,logout as userLogout,checkAuth as userCheckAuth,googleAuth,googleCallback,forgotPassword,resetPassword} from '../controllers/userAuth.controller.js';
+import { signup as userSignup,login as userLogin,logout as userLogout,checkAuth as userCheckAuth,googleAuth,googleCallback,forgotPassword,resetPassword,editProfile} from '../controllers/userAuth.controller.js';
 import fileUpload from '../middleware/file-upload.js';
 import verifyUserAuthentication from '../middleware/userAuth.middleware.js';
 const router= Router();
@@ -12,5 +12,6 @@ router.get('/auth/google', googleAuth);
 router.get('/auth/google/callback', googleCallback);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
+router.post('/edit-profile', verifyUserAuthentication, fileUpload.single("profilePic"), editProfile);
 
 export default router;

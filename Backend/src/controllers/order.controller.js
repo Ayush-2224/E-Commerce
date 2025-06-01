@@ -23,18 +23,14 @@ const createOrderbyProductId = async (req, res, next) => {
             return next(new HttpError("Product is not available", 400))
         }
         const {price} = product;
-        const razorpayOrder=await razorpay.orders.create({
-          amount: price*100,
-          currency: "INR",
-          receipt: `rcpt_${Date.now()}_${Math.floor(Math.random() * 10000)}`,
-        })
+        const razorpayOrder = await confirmOrder(price);
         res.status(201).json({
       success: true,
       razorpayOrder,
       key: process.env.RAZORPAY_KEY_ID,
+      username: req.userData.username,
       product,
-      username:req.userData.username,
-      email:req.userData.email,
+      email: req.userData.email,
     });
   }
   catch (error) {
@@ -43,16 +39,30 @@ const createOrderbyProductId = async (req, res, next) => {
   }
 }
 
-const verifyAndConfirm = async(req,res,next)=>{
+const confirmOrder = async (price) => {
+  try {
+    const razorpayOrder = await razorpay.orders.create({
+      amount: price * 100,
+      currency: "INR",
+      receipt: `rcpt_${Date.now()}_${Math.floor(Math.random() * 10000)}`,
+    });
+    return razorpayOrder;
+  } catch (error) {
+    console.error("Error confirming order:", error);
+    throw new Error("Failed to confirm order");
+  }
+};
+
+
+const verifyAndConfirm = async (req, res, next) => {
   const userId = req.userData._id;
   const {
     razorpay_order_id,
     razorpay_payment_id,
     razorpay_signature,
     productId,
+    isCartOrder=false, 
   } = req.body;
-
-  
 
   try {
     const hmac = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET);
@@ -63,110 +73,169 @@ const verifyAndConfirm = async(req,res,next)=>{
       return next(new HttpError("Invalid payment signature", 400));
     }
 
-    const product = await Product.findByIdAndUpdate(productId, {
-      $inc: { quantity: -1 },
-    });
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
-    const order = new Order({
-      productId,
-      price: product.price,
-      mrp: product.mrp,
-      userId,
-      paymentStatus: "Paid",
-      orderStatus: "Order Placed",
-    });
+    let orders = [];
+    let totalAmount = 0;
 
-    const payment = new Payment({
+    if (isCartOrder) {
+      const cart = await Cart.findOne({ userId }).session(session);
+      if (!cart || cart.products.length === 0) {
+        await session.abortTransaction();
+        session.endSession();
+        return next(new HttpError("Cart is empty or not found", 404));
+      }
+
+      for (const cartItem of cart.products) {
+        const product = await Product.findById(cartItem.productId).session(session);
+        if (!product || product.quantity < cartItem.quantity) {
+          await session.abortTransaction();
+          session.endSession();
+          return next(new HttpError(`Product unavailable: ${cartItem.productId}`, 400));
+        }
+
+        await Product.findByIdAndUpdate(product._id, {
+          $inc: { quantity: -cartItem.quantity },
+        }).session(session);
+        console.log(cartItem.quantity,"cartItem.quantity")
+        for(let i=0;i<cartItem.quantity;i++){
+          const order = new Order({
+          productId: product._id,
+          price: product.price,
+          mrp: product.mrp,
+          userId,
+          paymentStatus: "Paid",
+          orderStatus: "Order Placed",
+        });
+
+        const payment = new Payment({
+          type: "Receive",
+          userId,
+          orderId: order._id,
+          amount:product.price ,
+          transactionId: razorpay_payment_id,
+        });
+
+        await order.save({ session });
+        await payment.save({ session });
+        orders.push(order);
+        totalAmount += product.price;
+        }
+        
+      }
+
+      await Cart.findOneAndUpdate({ userId }, { products: [] }).session(session);
+    } else {
+      const product = await Product.findById(productId).session(session);
+      if (!product || product.quantity === 0) {
+        await session.abortTransaction();
+        session.endSession();
+        return next(new HttpError("Product not available", 400));
+      }
+
+      await Product.findByIdAndUpdate(productId, {
+        $inc: { quantity: -1 },
+      }).session(session);
+
+      const order = new Order({
+        productId,
+        price: product.price,
+        mrp: product.mrp,
+        userId,
+        quantity: 1,
+        paymentStatus: "Paid",
+        orderStatus: "Order Placed",
+      });
+
+      const payment = new Payment({
         type: "Receive",
         userId,
         orderId: order._id,
         amount: product.price,
         transactionId: razorpay_payment_id,
-    });
+      });
 
-    await order.save();
-    await payment.save();
+      await order.save({ session });
+      await payment.save({ session });
+      orders.push(order);
+      totalAmount = product.price;
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+
     res.status(201).json({
       success: true,
-      message: "Payment verified and order created",
-      order,
+      message: "Payment verified and orders created",
+      totalAmount,
+      orders,
     });
   } catch (error) {
     console.error("Error verifying payment:", error);
     return next(new HttpError("Failed to confirm order", 500));
   }
- 
-}
+};
 
-// quantity is not updated here handel it
+
 const createOrderbyCartId = async (req, res, next) => {
-    const userId = req.userData._id;
-    const session = await mongoose.startSession();
-    session.startTransaction();
-  
-    try {
-      const cart = await Cart.findOne({ userId }).session(session);
-      if (!cart) {
-        await session.abortTransaction();
-        return next(new HttpError("Cart not found", 404));
-      }
-  
-      let orders = [];
-      let totalAmount = 0;
-  
-      for (const cartItem of cart.products) {
-        const product = await Product.findById(cartItem.productId).session(session);
-        if (!product) {
-          await session.abortTransaction();
-          return next(new HttpError("Product not found", 404));
-        }
-        if (product.quantity < cartItem.quantity) {
-          await session.abortTransaction();
-          return next(new HttpError("Product unavailable", 400));
-        }
-  
-        // For each cart item, create an order with status "Payment Pending"
-        const order = new Order({
-          productId: cartItem.productId,
-          price: product.price,
-          mrp: product.mrp,
-          userId,
-          orderStatus: "Payment Pending",
-        });
-        await order.save({ session });
-        orders.push(order);
-        totalAmount += product.price * cartItem.quantity;
-        // Do not update product.quantity here.
-      }
-  
-      
-      const returnUrl = process.env.CASHFREE_RETURN_URL;
-      // If multiple orders, concatenate IDs (you could also create a separate "cart order" record)
-      const aggregatedOrderId = orders.map(o => o._id.toString()).join(",");
-      const tokenResponse = await generateCashfreeToken(
-        aggregatedOrderId,
-        totalAmount,
-        "INR",
-        req.userData.username,
-        req.userData.email,
-        returnUrl
-      );
-      await session.commitTransaction();
-      session.endSession();
-  
-      res.status(201).json({
-        message: "Orders created. Redirect to payment.",
-        orders,
-        cashfreeToken: tokenResponse.cftoken,
-      });
-    } catch (error) {
+  const userId = req.userData._id;
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const cart = await Cart.findOne({ userId }).session(session);
+    if (!cart || cart.products.length === 0) {
       await session.abortTransaction();
       session.endSession();
-      console.error("Transaction error:", error);
-      return next(new HttpError("Failed to create orders: " + error.message, 500));
+      return next(new HttpError("Cart is empty or not found", 404));
     }
-  };
-  
+
+    let orders = [];
+    let price = 0;
+
+    for (const cartItem of cart.products) {
+      const product = await Product.findById(cartItem.productId).session(session);
+      if (!product) {
+        await session.abortTransaction();
+        session.endSession();
+        return next(new HttpError(`Product not found: ${cartItem.productId}`, 404));
+      }
+      if (product.quantity < cartItem.quantity) {
+        await session.abortTransaction();
+        session.endSession();
+        return next(new HttpError(`Insufficient quantity for ${product.title}`, 400));
+      }
+
+      orders.push({
+        product,
+        quantity: cartItem.quantity,
+      });
+
+      price += product.price * cartItem.quantity;
+    }
+
+    const razorpayOrder = await confirmOrder(price);
+
+    await session.commitTransaction();
+    session.endSession();
+
+    res.status(201).json({
+      success: true,
+      razorpayOrder,
+      key: process.env.RAZORPAY_KEY_ID,
+      products:orders,
+      username: req.userData.username,
+      email: req.userData.email,
+    });
+
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    console.error("Transaction error:", error);
+    return next(new HttpError("Failed to create orders: " + error.message, 500));
+  }
+};
 
 const getOrders = async (req, res, next) => {
   const userId = req.userData._id;

@@ -16,6 +16,7 @@ import Cart from './pages/cart';
 import BuyNowPage from './pages/home';
 import ProductReviews from './pages/ProductReviews';
 import Review from './pages/Review';
+import Profile from './pages/Profile';
 function App() {
   
   return (
@@ -29,6 +30,7 @@ function App() {
       <Route path="/buy/:productId" element={<BuyNowPage/>} />
       <Route path="/reviews/:productId" element={<ProductReviews/>} />
       <Route path="/product/:productId/review" element={<Review/>} />
+      <Route path="/user/profile" element={<Profile/>} />
     </Route>
 
     {/* Auth pages without Nav + Footer */}

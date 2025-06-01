@@ -5,7 +5,7 @@ const router = Router()
 
 router.post('/cobpi/:productId', verifyUserAuthentication, createOrderbyProductId)
 router.post('/verify',verifyUserAuthentication,verifyAndConfirm)
-router.get('/cobci', verifyUserAuthentication, createOrderbyCartId)
+router.post('/cobci', verifyUserAuthentication, createOrderbyCartId)
 router.get('/getOrders', verifyUserAuthentication, getOrders)
 router.post('/cancelOrder/:orderId', verifyUserAuthentication, cancelOrder)
 
