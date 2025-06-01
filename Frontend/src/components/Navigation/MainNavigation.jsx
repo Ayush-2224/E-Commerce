@@ -19,7 +19,7 @@ const CartIcon = () => (
 const MainNavigation = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const params = new URLSearchParams(location.search);
+    const [searchTerm, setSearchTerm] = useState("");
     
     useEffect(() => {
   const params = new URLSearchParams(location.search);
@@ -27,7 +27,6 @@ const MainNavigation = () => {
   setSearchTerm(q);
 }, [location.search]);
 
-    const [searchTerm, setSearchTerm] = useState("");
     
     const handleSubmit = (e) => {
          e.preventDefault();
