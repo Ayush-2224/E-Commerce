@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom"; // Corrected import path
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 const SearchIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search h-6 w-6 md:h-8 md:w-8 text-gray-500"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
@@ -19,9 +20,15 @@ const MainNavigation = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const params = new URLSearchParams(location.search);
-    const initialSearchTerm = params.get("q") || "";
-    const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
+    
+    useEffect(() => {
+  const params = new URLSearchParams(location.search);
+  const q = params.get("q") || "";
+  setSearchTerm(q);
+}, [location.search]);
 
+    const [searchTerm, setSearchTerm] = useState("");
+    
     const handleSubmit = (e) => {
          e.preventDefault();
     const trimmed = searchTerm.trim();
