@@ -17,6 +17,7 @@ import BuyNowPage from './pages/home';
 import ProductReviews from './pages/ProductReviews';
 import Review from './pages/Review';
 import Profile from './pages/Profile';
+import Search from './util/search';
 function App() {
   
   return (
@@ -25,7 +26,7 @@ function App() {
     <Route element={<NavPages/>}>
       <Route path='/cart' element={<Cart/>} />
       <Route path="product/:productId" element={<Product />} />
-
+      <Route path="/search" element={<Search />} />
       <Route path='/order' element={<Order/>} />
       <Route path="/buy/:productId" element={<BuyNowPage/>} />
       <Route path="/reviews/:productId" element={<ProductReviews/>} />

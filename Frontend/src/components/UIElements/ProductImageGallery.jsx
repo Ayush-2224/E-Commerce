@@ -54,7 +54,7 @@ const ProductImageGallery = ({ images , productId }) => {
             src={img}
             alt={`Thumbnail ${index}`}
             onClick={() => setSelectedImage(img)}
-            className={`w-16 h-20 object-cover border cursor-pointer ${
+            className={`w-16 h-20 border cursor-pointer object-contain ${
               img === selectedImage ? 'border-blue-500' : 'border-gray-300'
             }`}
           />
