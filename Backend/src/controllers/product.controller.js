@@ -102,7 +102,6 @@ const addProduct = async (req, res, next) => {
 }
 
 const getProductById = async (req,res,next)=>{
-    console.log("getProductById")
     try {
         const {id}=req.params
         console.log(id)
@@ -237,32 +236,45 @@ const getProductsBySeller = async (req,res,next)=>{
 
 const searchProducts = async (req, res, next) => {
   const query = req.query.q;
-
+  const offset = parseInt(req.query.offset)
+  const limit = parseInt(req.query.limit) || 10
+// console.log(1);
 
   if (!query) {
     return next(new HttpError('Search query is required.', 400));
   }
 
   try {
-    const results = await Product.aggregate([
-      {
-        $search: {
-          index: 'default',
-          text: {
-            query,
-            path: ['title', 'category'], // Include other string fields as needed
-            fuzzy: {
-              maxEdits: 2,
-              prefixLength: 1,
-              maxExpansions: 50,
-            },
-          },
-        },
+    let results = await Product.aggregate([
+  {
+    $search: {
+      index: 'default',
+      text: {
+        query,
+        path: ['title', 'category'],
+        fuzzy: {
+          maxEdits: 1,         
+          prefixLength: 2,     
+          maxExpansions: 50
+        }
       },
-      {
-        $limit: 10,
-      },
-    ]);
+    }
+  },
+  {
+    $addFields: {
+      score: { $meta: "searchScore" }  
+    }
+  },
+  { $sort: { score: -1 } },           
+  { $skip: Number(offset) || 0 },
+  { $limit: Number(limit) || 10 }
+]);
+
+
+    results = await Product.populate(results, {
+        path: "seller",
+        select: "username"
+    })
 
     return res.status(200).json(results);
   } catch (error) {

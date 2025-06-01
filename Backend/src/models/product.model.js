@@ -78,16 +78,16 @@ const productSchema = mongoose.Schema({
     }
 });
 
-const Product = mongoose.model('Product', productSchema);
 
 productSchema.pre("save", function (next) {
     if (this.isModified("price") || this.isModified("mrp")) {
-      if (this.mrp < this.price) {
-        return next(new HttpError("Price cannot be greater than MRP", 400));
-      }
+        if (this.mrp < this.price) {
+            return next(new HttpError("Price cannot be greater than MRP", 400));
+        }
     }
     next();
-  });
-  
+});
+
+const Product = mongoose.model('Product', productSchema);
 
 export default Product; 

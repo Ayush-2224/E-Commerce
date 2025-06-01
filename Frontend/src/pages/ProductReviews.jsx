@@ -61,7 +61,6 @@ const ProductReviews = () => {
         setReviews([]);
         setHasMore(true);
         fetchReviews(0);
-
     }, [productId, sortBy, sortOrder]);
 
     return (
