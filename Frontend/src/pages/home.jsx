@@ -71,7 +71,7 @@ const BuyNowPage = () => {
             <img
               src={product.imageUrl || fallbackImage}
               alt={product.title}
-              className="w-full h-64 object-cover rounded-lg shadow-sm"
+              className="w-full h-64 object-contain p-2 rounded-lg shadow-sm"
               onError={(e) => {
                                 e.target.src = fallbackImage;
                               }}

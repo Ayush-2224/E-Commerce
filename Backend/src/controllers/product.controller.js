@@ -236,50 +236,90 @@ const getProductsBySeller = async (req,res,next)=>{
 
 const searchProducts = async (req, res, next) => {
   const query = req.query.q;
-  const offset = parseInt(req.query.offset)
-  const limit = parseInt(req.query.limit) || 10
-// console.log(1);
+  const offset = parseInt(req.query.offset) || 0;
+  const limit = parseInt(req.query.limit) || 10;
 
   if (!query) {
-    return next(new HttpError('Search query is required.', 400));
+    return next(new HttpError("Search query is required.", 400));
   }
 
   try {
+    //
+    // 1) Build a compound $search stage:
+    //    – A “phrase” clause (highest boost) for exact‐order matches
+    //    – A “text” clause on title (with moderate fuzziness + a boost)
+    //    – A “text” clause on category (with lighter fuzziness + smaller boost)
+    //
+    // 2) Extract the searchScore into a “score” field
+    // 3) Sort by score descending
+    // 4) Skip/limit for pagination
+    //
     let results = await Product.aggregate([
-  {
-    $search: {
-      index: 'default',
-      text: {
-        query,
-        path: ['title', 'category'],
-        fuzzy: {
-          maxEdits: 1,         
-          prefixLength: 2,     
-          maxExpansions: 50
+      {
+        $search: {
+          index: "default",
+          compound: {
+            should: [
+              {
+                phrase: {
+                  query: query,
+                  path: "title",
+                  slop: 1,
+                  score: { boost: { value: 5 } }
+                }
+              },
+              {
+                text: {
+                  query: query,
+                  path: "title",
+                  fuzzy: {
+                    maxEdits: 1,
+                    prefixLength: 2
+                  },
+                  score: { boost: { value: 2 } }
+                }
+              },
+              {
+                text: {
+                  query: query,
+                  path: "category",
+                  fuzzy: {
+                    maxEdits: 1,
+                    prefixLength: 3
+                  },
+                  score: { boost: { value: 1 } }
+                }
+              }
+            ],
+            minimumShouldMatch: 1
+          }
         }
       },
-    }
-  },
-  {
-    $addFields: {
-      score: { $meta: "searchScore" }  
-    }
-  },
-  { $sort: { score: -1 } },           
-  { $skip: Number(offset) || 0 },
-  { $limit: Number(limit) || 10 }
-]);
-
+      {
+        $addFields: {
+          score: { $meta: "searchScore" }
+        }
+      },
+      {
+        $sort: { score: -1 }
+      },
+      {
+        $skip: offset
+      },
+      {
+        $limit: limit
+      }
+    ]);
 
     results = await Product.populate(results, {
-        path: "seller",
-        select: "username"
-    })
+      path: "seller",
+      select: "username"
+    });
 
     return res.status(200).json(results);
   } catch (error) {
-    console.error('Search Error:', error);
-    return next(new HttpError('Internal Server Error', 500));
+    console.error("Search Error:", error);
+    return next(new HttpError("Internal Server Error", 500));
   }
 };
 
