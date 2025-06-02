@@ -5,7 +5,7 @@ import { useUserAuthStore } from '../store/userAuth.store';
 
 function Profile() {
   const { authUser , checkAuth,updateProfile} = useUserAuthStore();
-
+  const [allowEdit, setAllowEdit] = useState(false);
   const fileInputRef = useRef(null);
 
   const originalData = useMemo(() => ({
@@ -61,11 +61,14 @@ useEffect(() => {
       updatedData.address !== originalData.address ||
       updatedData.profilePic !== originalData.profilePic
     );
-  }, [updatedData, originalData]);
+  }, [updatedData, originalData]);     
 
  const handleSubmit = async (e) => {
   e.preventDefault();
-
+  if (!isChanged) {
+    setAllowEdit(false);
+    return;
+  }
   const formData = new FormData();
   formData.append('username', updatedData.username);
   formData.append('address', updatedData.address);
@@ -85,6 +88,8 @@ useEffect(() => {
     alert('Profile updated successfully!');
   } catch (err) {
     console.error('Error submitting form:', err);
+  }finally{
+    setAllowEdit(false);
   }
 };
 
@@ -139,6 +144,7 @@ useEffect(() => {
             name="username"
             value={updatedData.username || ''}
             onChange={changeHandler}
+            disabled = {!allowEdit}
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-400"
           />
         </div>
@@ -150,28 +156,32 @@ useEffect(() => {
             type="text"
             name="address"
             value={updatedData.address || ''}
+            disabled= {!allowEdit}
             onChange={changeHandler}
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-400"
           />
         </div>
 
         {/* Submit if changed */}
-        {isChanged && (
+        {allowEdit && (
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-md font-semibold hover:bg-blue-700 transition"
+            className="w-full bg-blue-600 text-white py-2 rounded-md font-semibold hover:bg-blue-700 transition cursor-pointer"
           >
             Submit Changes
           </button>
         )}
+        <div className='text-blue-400 mt-4 cursor-pointer mr-0 w-fit' onClick={() => setAllowEdit(!allowEdit)}>
+        { allowEdit ? '' : 'Edit Profile' }
+      </div>
       </form>
-
       {/* Navigation Links */}
       <div className="mt-6 flex gap-6 text-blue-600 font-medium">
         <Link to="/order" className="hover:underline">My Orders</Link>
         <Link to="/cart" className="hover:underline">My Cart</Link>
         <Link to="/forgot-password" className="hover:underline">Forgot Pasword</Link>
       </div>
+      
     </div>
   );
 }

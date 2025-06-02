@@ -39,6 +39,8 @@ const { razorpayOrder, key, username, email, products } = data;
                   });
         
                   alert("Payment success! Order placed.");
+    navigate("/order");
+
                 },
                 prefill: {
                   name: username , // Replace with real user name
@@ -52,6 +54,7 @@ const { razorpayOrder, key, username, email, products } = data;
       console.error("Error:", err);
       alert("Could not start payment");
     }
+    // setCart(null); // Clear cart after successful purchase
   };
 
 

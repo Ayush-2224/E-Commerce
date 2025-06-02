@@ -144,7 +144,6 @@ const checkAuth=async(req,res,next)=>{
      console.log("forgotPassword error", error);
      return next(new HttpError("ISE", 400));
    }
-
   }
 
   const resetPassword = async (req, res) => {

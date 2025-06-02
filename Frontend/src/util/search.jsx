@@ -112,6 +112,10 @@ const Search = () => {
               <span className="font-medium">{product.seller?.username}</span>{' '}
               <span className="text-green-600">✔️ Assured</span>
             </p>
+            <div className="inline-flex text-xs items-center font-medium bg-green-600 text-white px-2 py-1 rounded">
+                        {product.rating.toFixed(1)}
+                        <span className="ml-1">☆</span>
+                    </div>
             <div className="flex items-baseline space-x-2">
               <div className="text-2xl font-bold text-gray-900">₹{product.price}</div>
               <div className="text-sm line-through text-gray-400">₹{product.mrp}</div>

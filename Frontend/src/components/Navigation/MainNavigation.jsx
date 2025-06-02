@@ -86,7 +86,7 @@ const MainNavigation = () => {
         </li>
 
                 <li className='m-3 flex border-1 border-cyan-500 hover:bg-cyan-500 transition-colors duration-200'>
-                    <NavLink to="/signup" className="p-1 flex items-center gap-2">
+                    <NavLink to="/user/login" className="p-1 flex items-center gap-2">
                         <AccountIcon />
                         <span>Sign up</span>
                     </NavLink>
