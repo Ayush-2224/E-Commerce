@@ -110,6 +110,7 @@ useEffect(() => {
         accept="image/*"
         ref={fileInputRef}
         className="hidden"
+        disabled={!allowEdit}
         onChange={handleImageChange}
       />
       <img
@@ -171,17 +172,19 @@ useEffect(() => {
             Submit Changes
           </button>
         )}
-        <div className='text-blue-400 mt-4 cursor-pointer mr-0 w-fit' onClick={() => setAllowEdit(!allowEdit)}>
-        { allowEdit ? '' : 'Edit Profile' }
-      </div>
+        
+        { !allowEdit && <div className='text-blue-400 mt-4 cursor-pointer mr-0 w-fit' onClick={() => setAllowEdit(!allowEdit)}>
+          Edit Profile
+          </div>}
+      
       </form>
       {/* Navigation Links */}
       <div className="mt-6 flex gap-6 text-blue-600 font-medium">
         <Link to="/order" className="hover:underline">My Orders</Link>
         <Link to="/cart" className="hover:underline">My Cart</Link>
-        <Link to="/forgot-password" className="hover:underline">Forgot Pasword</Link>
+        <Link to="/user-reviews" className="hover:underline">My Reviews & Ratings</Link>
+        <Link to="/forgot-password" className="hover:underline">Reset Pasword</Link>
       </div>
-      
     </div>
   );
 }
