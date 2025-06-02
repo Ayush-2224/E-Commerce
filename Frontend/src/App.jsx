@@ -20,6 +20,9 @@ import Profile from './pages/Profile';
 import Search from './util/search';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import AddProduct from './pages/AddProduct';
+import SellerStore from './pages/sellerStore';
+import EditProduct from './pages/EditProduct';
 function App() {
   
   return (
@@ -36,6 +39,9 @@ function App() {
       <Route path="/user/profile" element={<Profile/>} />
       <Route path="user/forget-password" element={<ForgotPassword/>}/>
       <Route path="user/reset-password/:token" element={<ResetPassword/>}/>
+      <Route path="seller/add-product" element={<AddProduct />} />
+
+      
 
     </Route>
 
@@ -45,6 +51,8 @@ function App() {
       <Route path="/user/signup" element={<UserSignup />} />
       <Route path="/seller/login" element={<SellerLogin/>} />
       <Route path="/seller/signup" element={<SellerSignup />} />
+      <Route path="/seller/store" element={<SellerStore />} />
+      <Route path="/seller/edit-product/:id" element={<EditProduct />} />
     </Route>
   </Routes>
   <Toaster/>

@@ -19,8 +19,8 @@ const verifySellerAuthentication = async (req,res,next)=>{
             return res.status(404).json({message:"Seller not found"
             })
         }
-        req.sellerData = seller
-        next()
+        req.sellerData = seller;
+        next();
 
     } catch (error) {
         console.log("seller auth middleware: ", error)
