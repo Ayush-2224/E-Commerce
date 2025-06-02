@@ -49,27 +49,33 @@ const signup = async(req,res,next)=>{
 }
 
 const login = async(req,res,next)=>{
-    const {email, password} = req.body;
-    if(!email || email.trim() === "") return res.status(400).json({message: "Email is required"});
-    if(!password || password.trim() === "") return res.status(400).json({message: "Password is required"});
     
-    const seller = await Seller.findOne({email});
-    if(!seller) return res.status(400).json({message: "Invalid credentials email"});
-    
-    const isPasswordCorrect = await seller.isPasswordCorrect(password);
-    if(!isPasswordCorrect){
-        return res.status(400).json({message: "Invalid credentials password"});
+    try {
+        const {email, password} = req.body;
+        if(!email || email.trim() === "") return res.status(400).json({message: "Email is required"});
+        if(!password || password.trim() === "") return res.status(400).json({message: "Password is required"});
+        
+        const seller = await Seller.findOne({email});
+        if(!seller) return res.status(400).json({message: "Invalid credentials email"});
+        
+        const isPasswordCorrect = await seller.isPasswordCorrect(password);
+        if(!isPasswordCorrect){
+            return res.status(400).json({message: "Invalid credentials password"});
+        }
+        
+        generateTokenSeller(seller._id, res);
+        return res.status(200).json({
+            _id: seller._id,
+            username: seller.username,
+            email: seller.email,
+            profilePic: seller.profilePic,
+            address: seller.address,
+            rating: seller.rating
+        });
+    } catch (error) {
+        console.log("login error: ", error);
+        return next(new HttpError("ISE", 400));
     }
-    
-    generateTokenSeller(seller._id, res);
-    return res.status(200).json({
-        _id: seller._id,
-        username: seller.username,
-        email: seller.email,
-        profilePic: seller.profilePic,
-        address: seller.address,
-        rating: seller.rating
-    });
 }
 
 const logout = async(req,res,next)=>{

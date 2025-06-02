@@ -13,6 +13,7 @@ export const useSellerAuthStore = create((set,get) => ({
             // set({isCheckingAuth:true})
             const response =await axiosInstance.get('/seller/sellerInfo')
             set({authSeller:response.data})
+            return response.data
         } catch (error) {
             console.log(error)
             set({authSeller:null})
@@ -78,6 +79,17 @@ export const useSellerAuthStore = create((set,get) => ({
     //         set({isUpdatingProfile:false})
     //     }
     // },
-    
-    
+    addProduct: async(formData)=>{
+        try {
+            const res=await axiosInstance.post('/product/addProduct',formData)
+            return res.data
+        } catch (error) {
+            console.log(error)
+            toast.error(error.response.data.message)
+            throw error
+            
+        }
+    },
+   
+
 }))

@@ -1,5 +1,4 @@
 import express from 'express';
-import multer from 'multer';
 import { addProduct, getProductById, getProductsByCategory, getProductsBySeller ,editProduct,searchProducts} from '../controllers/product.controller.js';
 import verifySellerAuthentication from '../middleware/sellerAuth.middleware.js';
 import fileUpload from '../middleware/file-upload.js';

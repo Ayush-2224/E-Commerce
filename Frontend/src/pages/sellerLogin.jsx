@@ -1,12 +1,13 @@
 import { useSellerAuthStore } from "../store/sellerAuth.store";
 import React from "react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { Eye, EyeOff } from "lucide-react";
 
 
 function SellerLogin() {
+  const navigate=useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -40,7 +41,10 @@ function SellerLogin() {
     if (validateForm()) {
       try {
         await login(formData);
+        toast.success("Login successful!");
+        navigate("/seller/add-product");
       } catch (error) {
+        console.error("Login error:", error);
         toast.error(error.message || "Login failed. Please try again.");
       }
     }
@@ -135,7 +139,7 @@ function SellerLogin() {
               <div className="text-center mt-6">
                 <p className="text-sm text-gray-600">
                   Don't have an account?{" "}
-                  <Link to="/signup" className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                  <Link to="/seller/signup" className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
                     Create account
                   </Link>
                 </p>
