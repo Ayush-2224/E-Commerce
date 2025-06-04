@@ -32,10 +32,35 @@ const orderSchema = mongoose.Schema(
             enum:["Order Placed","Order Shipped","Order Delivered","Order Cancelled"],
             required:true,
             default:"Order Placed"
-        }
+        },
+        refundLimit:{
+            type:Date,
+            
+        },
+        sellerPaid:{
+            type:Boolean,
+            default:false
+        },
     },{timestamps:true}
 )
 
+
+const refundTime=10*24*60*60*1000; // 10 days in milliseconds
+orderSchema.pre("save", function(next) {
+    if (this.isNew) {
+        this.refundLimit = new Date(Date.now() + refundTime);
+    }
+    next();
+});
+
+orderSchema.virtual('isRefundEligible').get(function () {
+  return new Date() <= this.refundLimit;
+});
+
+orderSchema.set('toJSON', { virtuals: true });
+orderSchema.set('toObject', { virtuals: true });
+
+
 const Order = mongoose.model("Order",orderSchema);
 
-export default Order 
+export default Order

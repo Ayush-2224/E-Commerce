@@ -9,6 +9,11 @@ function Order() {
 
   useEffect(() => {
     getOrders();
+    if (orders) {
+    orders.forEach(order => {
+      console.log(`Order ${order._id} isRefundEligible:`, order.isRefundEligible);
+    });
+  }
   }, []);
 
   const getOrders = async () => {
@@ -127,6 +132,7 @@ function Order() {
                 className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200"
               >
                 {order.productId.map((product, index) => (
+                  
                   <div
                     key={product._id}
                     className={`${index > 0 ? "border-t border-gray-100" : ""}`}
@@ -238,7 +244,7 @@ function Order() {
                             </div>
 
                             {order.orderStatus !== "Order Cancelled" &&
-                              index === 0 && (
+                              index === 0 && order.isRefundEligible && (
                                 <div
                                   onClick={(e) => {
                                     e.preventDefault();

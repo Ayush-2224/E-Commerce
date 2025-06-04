@@ -3,28 +3,28 @@ import Cart from "../models/cart.model.js";
 import HttpError from "../models/http-error.js";
 import Product from "../models/product.model.js";
 import mongoose from "mongoose";
-import {generateCashfreeToken} from "./payment.controller.js";
+import { generateCashfreeToken } from "./payment.controller.js";
 import razorpay from "../lib/razorpay.js";
 import crypto from 'crypto'
 import Payment from "../models/Payment.model.js";
 const createOrderbyProductId = async (req, res, next) => {
-       const {productId} = req.params;
-      
+  const { productId } = req.params;
 
-    try {
-       
+
+  try {
+
     const product = await Product.findById(productId);
-   
-    if(!product){
-        return next(new HttpError("Product not found", 404));
+
+    if (!product) {
+      return next(new HttpError("Product not found", 404));
     }
 
-        if(product.quantity === 0){
-            return next(new HttpError("Product is not available", 400))
-        }
-        const {price} = product;
-        const razorpayOrder = await confirmOrder(price);
-        res.status(201).json({
+    if (product.quantity === 0) {
+      return next(new HttpError("Product is not available", 400))
+    }
+    const { price } = product;
+    const razorpayOrder = await confirmOrder(price);
+    res.status(201).json({
       success: true,
       razorpayOrder,
       key: process.env.RAZORPAY_KEY_ID,
@@ -61,7 +61,7 @@ const verifyAndConfirm = async (req, res, next) => {
     razorpay_payment_id,
     razorpay_signature,
     productId,
-    isCartOrder=false, 
+    isCartOrder = false,
   } = req.body;
 
   try {
@@ -98,31 +98,31 @@ const verifyAndConfirm = async (req, res, next) => {
         await Product.findByIdAndUpdate(product._id, {
           $inc: { quantity: -cartItem.quantity },
         }).session(session);
-        console.log(cartItem.quantity,"cartItem.quantity")
-        for(let i=0;i<cartItem.quantity;i++){
+        console.log(cartItem.quantity, "cartItem.quantity")
+        for (let i = 0; i < cartItem.quantity; i++) {
           const order = new Order({
-          productId: product._id,
-          price: product.price,
-          mrp: product.mrp,
-          userId,
-          paymentStatus: "Paid",
-          orderStatus: "Order Placed",
-        });
+            productId: product._id,
+            price: product.price,
+            mrp: product.mrp,
+            userId,
+            paymentStatus: "Paid",
+            orderStatus: "Order Placed",
+          });
 
-        const payment = new Payment({
-          type: "Receive",
-          userId,
-          orderId: order._id,
-          amount:product.price ,
-          transactionId: razorpay_payment_id,
-        });
+          const payment = new Payment({
+            type: "Receive",
+            userId,
+            orderId: order._id,
+            amount: product.price,
+            transactionId: razorpay_payment_id,
+          });
 
-        await order.save({ session });
-        await payment.save({ session });
-        orders.push(order);
-        totalAmount += product.price;
+          await order.save({ session });
+          await payment.save({ session });
+          orders.push(order);
+          totalAmount += product.price;
         }
-        
+
       }
 
       await Cart.findOneAndUpdate({ userId }, { products: [] }).session(session);
@@ -224,7 +224,7 @@ const createOrderbyCartId = async (req, res, next) => {
       success: true,
       razorpayOrder,
       key: process.env.RAZORPAY_KEY_ID,
-      products:orders,
+      products: orders,
       username: req.userData.username,
       email: req.userData.email,
     });
@@ -241,17 +241,17 @@ const getOrders = async (req, res, next) => {
   const userId = req.userData._id;
 
   try {
-    const orders = await Order.find({ userId })
+    const orders = await Order.find({ userId }).sort({ createdAt: -1 })
       .populate({
         path: "productId",
         select: "title brand imageUrl"
       })
-      .lean();
-
+      
     res.status(200).json({ orders });
   } catch (error) {
     return next(new HttpError("Failed to get orders", 500));
   }
+
 };
 
 
@@ -286,6 +286,11 @@ const cancelOrder = async (req, res, next) => {
     if (order.orderStatus === "Order Cancelled") {
       return next(new HttpError("Order already cancelled", 400));
     }
+    if (new Date() > order.refundLimit) {
+      const err = new HttpError("Refund window expired", 403);
+      err.checkRefund = false;
+      return next(err);
+    }
 
     // Check if payment was made
     const paymentInfo = await Payment.findOne({ orderId });
@@ -295,7 +300,7 @@ const cancelOrder = async (req, res, next) => {
       await Product.findByIdAndUpdate(order.productId, { $inc: { quantity: 1 } });
       order.paymentStatus = "Cancelled";
       await order.save();
-  
+
       return res.status(200).json({
         message: "Order cancelled successfully. No payment found, so no refund issued.",
         order,
@@ -304,7 +309,7 @@ const cancelOrder = async (req, res, next) => {
 
     // Refund case
     const refundResult = await refund(paymentInfo.transactionId);
-  
+
     if (!refundResult.success) {
       return next(new HttpError("Refund initiation failed", 500));
     }
@@ -327,5 +332,5 @@ const cancelOrder = async (req, res, next) => {
   }
 };
 
-export {createOrderbyProductId,verifyAndConfirm, createOrderbyCartId, getOrders, cancelOrder};
+export { createOrderbyProductId, verifyAndConfirm, createOrderbyCartId, getOrders, cancelOrder };
 

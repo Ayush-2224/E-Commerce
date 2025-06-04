@@ -3,16 +3,19 @@ import mongoose from "mongoose";
 const PaymentSchema = mongoose.Schema({
     type:{
         type: String,
-        enum: ["Receive", "Refunded"],
+        enum: ["Receive", "Refunded", "Payment to Seller"],
         required: true
     },
     userId:{
         type:mongoose.Schema.ObjectId,
         ref:"User",
-        required:true,
+    },
+    sellerId:{
+        type:mongoose.Schema.ObjectId,
+        ref:"User",
     },
     orderId:{
-        type:[mongoose.Schema.ObjectId],
+        type:mongoose.Schema.ObjectId,
         ref:"Product",
         required:true,
     },
