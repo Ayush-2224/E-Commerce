@@ -3,11 +3,18 @@ import { axiosInstance } from '../../lib/axios';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useUserAuthStore } from '../../store/userAuth.store';
 const ProductImageGallery = ({ images , productId }) => {
   const [selectedImage, setSelectedImage] = useState(images?.[0]);
   const [check, setCheck] = useState(false);
+  const authUser = useUserAuthStore((state) => state.authUser);
+  const isLoggedIn = !!authUser;
   const navigate = useNavigate();
     const addtoCartHandler = async () => {
+        if(!isLoggedIn){
+          navigate("/user/login");
+          return
+        }
         if(check === true){
             navigate("/cart");
             return;
@@ -26,11 +33,18 @@ const ProductImageGallery = ({ images , productId }) => {
 
 
     const buyNowHandler = async () => {
+        if(!isLoggedIn){
+          navigate("/user/login");
+          return
+        }
         navigate(`/buy/${productId}`);
     }
 
     useEffect(() => {
         const checkProductInCart = async () => {
+          if(!isLoggedIn){
+          return
+        }
         try{
             const response = await axiosInstance.get(`cart/check/${productId}`);
             if(response.status === 200){

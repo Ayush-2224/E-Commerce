@@ -73,7 +73,6 @@ const ProductReviews = () => {
                         className="ml-2 p-1 border rounded "
                         value={sortBy}
                         onChange={(e) => {
-                            setOffset(0);
                             setSortBy(e.target.value);
                         }}
                     >
@@ -82,9 +81,8 @@ const ProductReviews = () => {
                     </select>
                 </label>
                 <button
-                    className="px-3 py-1 bg-blue-600 text-white rounded"
+                    className="px-3 py-1 bg-blue-600 text-white rounded cursor-pointer"
                     onClick={() => {
-                        setOffset(0);
                         setSortOrder((prev) => prev * -1);
                     }}
                 >

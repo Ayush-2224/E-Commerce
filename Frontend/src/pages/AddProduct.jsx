@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { useSellerAuthStore } from "../store/sellerAuth.store";
-
+import LoadingSpinner from "../components/UIElements/LoadingSpinner";
+import toast from "react-hot-toast";
 const AddProduct = () => {
   const { authSeller, addProduct, checkAuth } = useSellerAuthStore();
-
+  const [loading, setLoading] = useState(false);
   const [mainImages, setMainImages] = useState([]);
   const [descriptionBlocks, setDescriptionBlocks] = useState([]);
   const [specGroups, setSpecGroups] = useState([]);
@@ -37,6 +38,7 @@ const AddProduct = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const formData = new FormData();
       Object.entries(formValues).forEach(([key, val]) => formData.append(key, val));
@@ -58,15 +60,17 @@ const AddProduct = () => {
       formData.append("specifications", JSON.stringify(specs));
      // console.log(formData.get("specifications"));
       await addProduct(formData);
-      alert("Product added successfully");
+      toast.success("Product added successfully");
     } catch (err) {
-      alert("Failed to add product");
+      toast.error("Failed to add product");
       console.error(err);
+    }finally{
+      setLoading(false);
     }
   };
-
   return (
   <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-8 px-4">
+    {loading && <LoadingSpinner asOverlay />}
     <div className="max-w-6xl mx-auto">
       <form onSubmit={handleFormSubmit} className="bg-white/80 backdrop-blur-sm shadow-2xl rounded-3xl border border-white/20 overflow-hidden">
         {/* Header */}

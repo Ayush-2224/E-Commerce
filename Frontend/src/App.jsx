@@ -22,6 +22,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import AddProduct from './pages/AddProduct';
 import SellerStore from './pages/sellerStore';
+import UserReviews from './pages/UserReviews';
 import EditProduct from './pages/EditProduct';
 // import EditProduct from './pages/EditProduct';
 function App() {
@@ -38,12 +39,10 @@ function App() {
       <Route path="/reviews/:productId" element={<ProductReviews/>} />
       <Route path="/product/:productId/review" element={<Review/>} />
       <Route path="/user/profile" element={<Profile/>} />
+      <Route path="/user/reviews" element={<UserReviews/>} />
       <Route path="user/forget-password" element={<ForgotPassword/>}/>
       <Route path="user/reset-password/:token" element={<ResetPassword/>}/>
       <Route path="seller/add-product" element={<AddProduct />} />
-
-      
-
     </Route>
 
     {/* Auth pages without Nav + Footer */}
