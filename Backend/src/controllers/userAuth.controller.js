@@ -100,7 +100,7 @@ const checkAuth=async(req,res,next)=>{
 
   const googleCallback = [
     passport.authenticate('google', {
-      failureRedirect: '/api/user/login',
+      failureRedirect: `${clientURL}/user/signup`,
       session: false,
     }),
     async (req, res) => {
@@ -138,7 +138,7 @@ const checkAuth=async(req,res,next)=>{
        subject: "Password Reset",
        html: `<p>Click <a href="${resetURL}">here</a> to reset your password</p>`,
      });
-     res.json({ msg: "Reset email sent" });
+     return res.json({ msg: "Reset email sent" });
  
    } catch (error) {
      console.log("forgotPassword error", error);

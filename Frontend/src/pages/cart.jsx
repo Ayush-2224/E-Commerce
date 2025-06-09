@@ -4,25 +4,28 @@ import LoadingSpinner from "../components/UIElements/LoadingSpinner";
 import CartProduct from '../components/UIElements/cartProduct';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { useUserAuthStore } from '../store/userAuth.store';
 const Cart = () => {
+    const {checkAuth,authUser} = useUserAuthStore()
     const [cart, setCart] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
     const [totalPrice, setTotalPrice] = useState(0);
     const [totalMrp, setTotalMrp] = useState(0);
+    useEffect(()=>{checkAuth()},[checkAuth])
+    
     const purchaseHandler = async () => {
         if (!cart || !cart.products || cart.products.length === 0) {
             toast.error("Your cart is empty!");
             return;
         }
-      try {  
-        const { data } = await axiosInstance.post(`/order/cobci`);
-const { razorpayOrder, key, username, email, products } = data;
+        try {
+            const { data } = await axiosInstance.post(`/order/cobci`);
+            const { razorpayOrder, key, username, email, products } = data;
 
 
-        const options = {
+            const options = {
                 key,
                 amount: razorpayOrder.amount,
                 currency: "INR",
@@ -30,37 +33,37 @@ const { razorpayOrder, key, username, email, products } = data;
                 description: "Product Purchase",
                 order_id: razorpayOrder.id,
                 handler: async function (response) {
-                  await axiosInstance.post("/order/verify", {
-                    razorpay_payment_id: response.razorpay_payment_id,
-                    razorpay_order_id: response.razorpay_order_id,
-                    razorpay_signature: response.razorpay_signature,
-                    isCartOrder: true,
-                    
-                  });
-        
-                  alert("Payment success! Order placed.");
-    navigate("/order");
+                    await axiosInstance.post("/order/verify", {
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_signature: response.razorpay_signature,
+                        isCartOrder: true,
+
+                    });
+
+                    alert("Payment success! Order placed.");
+                    navigate("/order");
 
                 },
                 prefill: {
-                  name: username , // Replace with real user name
-                  email: email, // Replace with real user email
+                    name: username, // Replace with real user name
+                    email: email, // Replace with real user email
                 },
                 theme: { color: "#3399cc" },
-              };
-         const rzp = new window.Razorpay(options);
-      rzp.open();
-    } catch (err) {
-      console.error("Error:", err);
-      alert("Could not start payment");
-    }
-    // setCart(null); // Clear cart after successful purchase
-  };
+            };
+            const rzp = new window.Razorpay(options);
+            rzp.open();
+        } catch (err) {
+            console.error("Error:", err);
+            alert("Could not start payment");
+        }
+        // setCart(null); // Clear cart after successful purchase
+    };
 
 
     const changeQuantity = async (productId, quantity) => {
         setLoading(true);
-        setError(null); 
+        setError(null);
         try {
             const response = await axiosInstance.put(`cart/modifyQty/${productId}`, { quantity });
             setCart(response.data.cart);
@@ -75,7 +78,7 @@ const { razorpayOrder, key, username, email, products } = data;
 
     const removeProduct = async (productId) => {
         setLoading(true);
-        setError(null); 
+        setError(null);
         try {
             const response = await axiosInstance.delete(`cart/remove/${productId}`);
             setCart(response.data.cart);
@@ -192,12 +195,12 @@ const { razorpayOrder, key, username, email, products } = data;
                             </p>
 
                             <button
-  className="w-full py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer disabled:cursor-not-allowed focus:ring-indigo-500 transition duration-300 ease-in-out disabled:bg-indigo-400 shadow-md"
-  disabled={totalMrp === 0}
-  onClick={purchaseHandler}
->
-  Place Order
-</button>
+                                className="w-full py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer disabled:cursor-not-allowed focus:ring-indigo-500 transition duration-300 ease-in-out disabled:bg-indigo-400 shadow-md"
+                                disabled={totalMrp === 0}
+                                onClick={purchaseHandler}
+                            >
+                                Place Order
+                            </button>
 
 
                         </div>

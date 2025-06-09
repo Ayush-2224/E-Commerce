@@ -22,6 +22,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import AddProduct from './pages/AddProduct';
 import SellerStore from './pages/sellerStore';
+import EditProduct from './pages/EditProduct';
 // import EditProduct from './pages/EditProduct';
 function App() {
   
@@ -52,6 +53,7 @@ function App() {
       <Route path="/seller/login" element={<SellerLogin/>} />
       <Route path="/seller/signup" element={<SellerSignup />} />
       <Route path="/seller/store" element={<SellerStore />} />
+      <Route path="/seller/edit-product/:id" element={<EditProduct />} />
       {/* <Route path="/seller/edit-product/:id" element={<EditProduct />} /> */}
     </Route>
   </Routes>

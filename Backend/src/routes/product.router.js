@@ -13,7 +13,10 @@ router.post('/addProduct', verifySellerAuthentication, fileUpload.fields([
 ]), addProduct);
 router.get('/getProduct/:id',getProductById)
 router.get('/filterProducts/:category',getProductsByCategory)
-router.put('/editProduct/:id',verifySellerAuthentication,editProduct)
+router.post('/editProduct/:id',verifySellerAuthentication,fileUpload.fields([
+    {name: "mainImages", maxCount: 10},
+    {name: "descriptionImages", maxCount:10}
+]),editProduct)
 router.get('/getProductsBySeller',verifySellerAuthentication,getProductsBySeller)
 router.get('/search',searchProducts)
 

@@ -98,7 +98,7 @@ const Product = () => {
     return (
         <div className=''>
 
-            <div class="bg-white p-4 flex flex-col md:flex-row gap-10">
+            <div className="bg-white p-4 flex flex-col md:flex-row gap-10">
 
                 {error && <p className="text-red-500 text-center pb-4">{error}</p>} {/* Show operational errors */}
                 <div className='flex flex-col gap-4 md:sticky md:top-10 h-fit'>

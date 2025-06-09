@@ -1,693 +1,645 @@
-import React, { useState, useEffect } from "react";
-import { toast } from "react-hot-toast";
-import { useSellerAuthStore } from "../store/sellerAuth.store";
-import { useNavigate, useParams } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import { axiosInstance } from "../lib/axios";
-
-const categoryOptions = [
-  "Electronics",
-  "Appliances", 
-  "Mobiles",
-  "Toys",
-  "Books",
-  "Food",
-  "Furniture",
-  "Medicines",
+import { useParams } from "react-router-dom";
+const validCategories = [
+  "Electronics", "Appliances", "Mobiles", "Toys",
+  "Books", "Food", "Furniture", "Medicines"
 ];
 
 function EditProduct() {
-  const navigate = useNavigate();
   const { id } = useParams();
-  const { authSeller, checkAuth } = useSellerAuthStore();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [brand, setBrand] = useState("");
+  const [title, setTitle] = useState("");
+  const [category, setCategory] = useState("");
+  const [price, setPrice] = useState("");
+  const [mrp, setMrp] = useState("");
+  const [quantity, setQuantity] = useState("");
+  
+  // Main images: Array of { url: string, file?: File, toRemove: bool }
+  const [mainImages, setMainImages] = useState([]);
+
+  // Description: array of { heading, text, imageUrl, newImageFile?, toRemove? }
+  const [description, setDescription] = useState([]);
+
+  // Specifications: array of { heading, specs: [{key, value}] }
+  const [specifications, setSpecifications] = useState([]);
+
+  // Files for new main images upload
+  const [newMainImagesFiles, setNewMainImagesFiles] = useState([]);
+
+  // Files for new description images (matching description items that have new images)
+  // We'll link them directly in description state as newImageFile.
 
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
-  const [productData, setProductData] = useState({
-    brand: "",
-    title: "",
-    category: "",
-    price: 0,
-    mrp: 0,
-    quantity: 0,
-    description: [],
-    specifications: [],
-  });
-
-  const [existingMainImages, setExistingMainImages] = useState([]);
-  const [newMainImages, setNewMainImages] = useState([]);
-  const [existingDescriptionImages, setExistingDescriptionImages] = useState([]);
-  const [newDescriptionImages, setNewDescriptionImages] = useState([]);
-
-  // Load product data
-  useEffect(() => {
-    const loadProduct = async () => {
-      if (!id) return;
-      
+    async function fetchProduct() {
       try {
-        setIsLoading(true);
-        const res= await axiosInstance.get(`product/getProduct/${id}`)
-        const product = res.data
-        
-        if (product) {
-          setProductData({
-            brand: product.brand || "",
-            title: product.title || "",
-            category: product.category || "",
-            price: product.price || 0,
-            mrp: product.mrp || 0,
-            quantity: product.quantity || 0,
-            description: product.description || [],
-            specifications: product.specifications?.[0]?.specs || [],
-          });
-          
-          setExistingMainImages(product.imageUrl || []);
-          
-          // Extract existing description images
-          const descImages = product.description?.filter(desc => desc.image).map(desc => desc.image) || [];
-          setExistingDescriptionImages(descImages);
-        }
+        const res = await axiosInstance.get(`product/getProduct/${id}`);
+        const p = res.data;
+
+        setBrand(p.brand);
+        setTitle(p.title);
+        setCategory(p.category);
+        setPrice(p.price);
+        setMrp(p.mrp);
+        setQuantity(p.quantity);
+
+        // Initialize mainImages array with existing URLs
+        setMainImages(p.imageUrl.map(url => ({ url, toRemove: false })));
+
+        // Description init
+        setDescription(p.description.map(d => ({
+          heading: d.heading || "",
+          text: d.text || "",
+          imageUrl: d.image || "",
+          newImageFile: null,
+          toRemove: false
+        })));
+
+        // Specifications init
+        setSpecifications(p.specifications || []);
+
+        setLoading(false);
       } catch (error) {
-        toast.error("Failed to load product data");
-        console.error("Load product error:", error);
-      } finally {
-        setIsLoading(false);
+        alert("Failed to load product");
+        setLoading(false);
       }
-    };
-
-    if (authSeller && id) {
-      loadProduct();
     }
-  }, [authSeller, id]);
 
-  const handleNewMainImageChange = (index, file) => {
-    const updated = [...newMainImages];
-    updated[index] = file;
-    setNewMainImages(updated);
-  };
+    fetchProduct();
+  }, [id]);
 
-  const handleAddNewMainImage = () => {
-    setNewMainImages([...newMainImages, null]);
-  };
-
-  const handleRemoveNewMainImage = (index) => {
-    const updated = newMainImages.filter((_, i) => i !== index);
-    setNewMainImages(updated);
-  };
-
-  const handleRemoveExistingMainImage = (index) => {
-    const updated = existingMainImages.filter((_, i) => i !== index);
-    setExistingMainImages(updated);
-  };
-
-  const handleSpecChange = (index, field, value) => {
-    const updated = [...productData.specifications];
-    if (!updated[index]) updated[index] = { key: "", value: "" };
-    updated[index][field] = value;
-    setProductData({ ...productData, specifications: updated });
-  };
-
-  const handleAddSpec = () => {
-    setProductData({
-      ...productData,
-      specifications: [...productData.specifications, { key: "", value: "" }],
+  function handleMainImageRemove(index) {
+    setMainImages(prev => {
+      const copy = [...prev];
+      copy[index].toRemove = true;
+      return copy;
     });
-  };
+  }
 
-  const handleRemoveSpec = (index) => {
-    const updated = productData.specifications.filter((_, i) => i !== index);
-    setProductData({ ...productData, specifications: updated });
-  };
+  function handleAddMainImages(e) {
+    // Append new files to upload list & show previews
+    const files = Array.from(e.target.files);
+    setNewMainImagesFiles(prev => [...prev, ...files]);
+  }
 
-  const handleDescriptionChange = (index, field, value) => {
-    const updated = [...productData.description];
-    if (!updated[index]) updated[index] = { heading: "", text: "", image: "" };
-    updated[index][field] = value;
-    setProductData({ ...productData, description: updated });
-  };
-
-  const handleAddDescription = () => {
-    setProductData({
-      ...productData,
-      description: [...productData.description, { heading: "", text: "", image: "" }],
+  function handleRemoveNewMainImage(index) {
+    setNewMainImagesFiles(prev => {
+      const copy = [...prev];
+      copy.splice(index, 1);
+      return copy;
     });
-  };
+  }
 
-  const handleRemoveDescription = (index) => {
-    const updated = productData.description.filter((_, i) => i !== index);
-    setProductData({ ...productData, description: updated });
-  };
+  // Description handlers
+  function updateDescriptionField(index, field, value) {
+    setDescription(prev => {
+      const copy = [...prev];
+      copy[index][field] = value;
+      return copy;
+    });
+  }
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setProductData((prev) => ({ ...prev, [name]: value }));
-  };
+  function handleDescriptionImageChange(index, e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    setDescription(prev => {
+      const copy = [...prev];
+      copy[index].newImageFile = file;
+      // Clear old imageUrl if new image selected
+      copy[index].imageUrl = "";
+      return copy;
+    });
+  }
 
-  const handleNewDescriptionImageChange = (index, file) => {
-    const updated = [...newDescriptionImages];
-    updated[index] = file;
-    setNewDescriptionImages(updated);
-  };
+  function handleRemoveDescription(index) {
+    setDescription(prev => {
+      const copy = [...prev];
+      copy[index].toRemove = true;
+      return copy;
+    });
+  }
 
-  const handleAddNewDescriptionImage = () => {
-    setNewDescriptionImages([...newDescriptionImages, null]);
-  };
+  function handleAddDescription() {
+    setDescription(prev => [...prev, { heading: "", text: "", imageUrl: "", newImageFile: null, toRemove: false }]);
+  }
 
-  const handleRemoveNewDescriptionImage = (index) => {
-    const updated = newDescriptionImages.filter((_, i) => i !== index);
-    setNewDescriptionImages(updated);
-  };
+  // Specifications handlers
+  function updateSpecHeading(index, value) {
+    setSpecifications(prev => {
+      const copy = [...prev];
+      copy[index].heading = value;
+      return copy;
+    });
+  }
 
-  const handleRemoveExistingDescriptionImage = (index) => {
-    const updated = existingDescriptionImages.filter((_, i) => i !== index);
-    setExistingDescriptionImages(updated);
-  };
+  function updateSpecKey(specGroupIndex, specIndex, value) {
+    setSpecifications(prev => {
+      const copy = [...prev];
+      copy[specGroupIndex].specs[specIndex].key = value;
+      return copy;
+    });
+  }
 
-  const handleSubmit = async (e) => {
+  function updateSpecValue(specGroupIndex, specIndex, value) {
+    setSpecifications(prev => {
+      const copy = [...prev];
+      copy[specGroupIndex].specs[specIndex].value = value;
+      return copy;
+    });
+  }
+
+  function addSpecGroup() {
+    setSpecifications(prev => [...prev, { heading: "", specs: [{ key: "", value: "" }] }]);
+  }
+
+  function removeSpecGroup(index) {
+    setSpecifications(prev => {
+      const copy = [...prev];
+      copy.splice(index, 1);
+      return copy;
+    });
+  }
+
+  function addSpecInGroup(groupIndex) {
+    setSpecifications(prev => {
+      const copy = [...prev];
+      copy[groupIndex].specs.push({ key: "", value: "" });
+      return copy;
+    });
+  }
+
+  function removeSpecInGroup(groupIndex, specIndex) {
+    setSpecifications(prev => {
+      const copy = [...prev];
+      copy[groupIndex].specs.splice(specIndex, 1);
+      return copy;
+    });
+  }
+
+  async function handleSubmit(e) {
     e.preventDefault();
-    
-    if (!productData.category || !productData.price || !productData.quantity) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
 
-    setIsSubmitting(true);
     const formData = new FormData();
-    
-    // Add basic product data
-    formData.append("category", productData.category);
-    formData.append("price", productData.price);
-    formData.append("mrp", productData.mrp || productData.price);
-    formData.append("quantity", productData.quantity);
 
-    // Add specifications
-    const filteredSpecs = productData.specifications.filter(spec => 
-      spec.key.trim() && spec.value.trim()
-    );
-    formData.append("specifications", JSON.stringify(filteredSpecs));
+    formData.append("category", category);
+    formData.append("price", price);
+    formData.append("mrp", mrp || price);
+    formData.append("quantity", quantity);
 
-    // Add description
-    const filteredDescription = productData.description.filter(desc => 
-      desc.heading.trim() || desc.text.trim()
-    );
-    formData.append("description", JSON.stringify(filteredDescription));
+    // Brand and Title not editable as per your request, so no need to send those again
 
-    // Add new main images
-    newMainImages.forEach((file) => {
-      if (file) {
-        formData.append("mainImages", file);
+    // Handle main images
+    // Send only images that are not marked for removal
+    const keptImageUrls = mainImages.filter(img => !img.toRemove).map(img => img.url);
+
+    // Append kept images URLs as JSON string (if your backend accepts it)
+    formData.append("existingMainImages", JSON.stringify(keptImageUrls));
+
+    // Append newly added main image files
+    newMainImagesFiles.forEach((file, i) => {
+      formData.append("mainImages", file);
+    });
+
+    // Handle description: send only items not marked toRemove
+    const filteredDescription = description.filter(d => !d.toRemove);
+
+    // For description images: we send new images as files, old ones as URLs in JSON
+    // We'll append description as JSON but for new images, backend expects files named descriptionImages[]
+    const descriptionForBackend = filteredDescription.map(d => ({
+      heading: d.heading,
+      text: d.text,
+      image: d.imageUrl,  // old image url if any
+      needsNewImage: d.newImageFile ? true : false
+    }));
+
+    formData.append("description", JSON.stringify(descriptionForBackend));
+    filteredDescription.forEach(d => {
+      if (d.newImageFile) {
+        formData.append("descriptionImages", d.newImageFile);
       }
     });
 
-    // Add new description images
-    newDescriptionImages.forEach((file) => {
-      if (file) {
-        formData.append("descriptionImages", file);
-      }
-    });
+    // Handle specifications - just send them as JSON string
+    formData.append("specifications", JSON.stringify(specifications));
 
     try {
-      await axiosInstance.post(`product/editProduct/${id}`,formData);
-      toast.success("Product updated successfully! 🎉");
-      navigate("/seller/store");
+     
+      const res = await axiosInstance.post(`product/editProduct/${id}`, formData);
+
+      alert("Product updated successfully");
+      // Redirect or update UI accordingly
     } catch (error) {
-      toast.error("Error updating product");
-      console.error("Submit error:", error);
-    } finally {
-      setIsSubmitting(false);
+      console.log(error);
+      alert("Failed to update product");
+      console.error(error);
     }
-  };
-
-  if (!authSeller) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Authentication Required</h2>
-            <p className="text-gray-600">Please log in to edit your product.</p>
-          </div>
-        </div>
-      </div>
-    );
   }
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-            <h2 className="text-xl font-semibold text-gray-900">Loading Product Data...</h2>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <div>Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl mb-4">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
+  <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-8 px-4">
+    <div className="max-w-6xl mx-auto">
+      <form onSubmit={handleSubmit} className="bg-white/80 backdrop-blur-sm shadow-2xl rounded-3xl border border-white/20 overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 px-8 py-6">
+          <h2 className="text-3xl font-bold text-white flex items-center gap-3">
+            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+              <span className="text-2xl">✏️</span>
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
-              Edit Product
-            </h1>
-            <p className="text-gray-600 text-lg">Update Your Product Details</p> 
+            Edit Product
+          </h2>
+          <p className="text-blue-100 mt-2">Update your product information and details</p>
+        </div>
+
+        <div className="p-8 space-y-8">
+          {/* Product Info Section */}
+          <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-2xl p-6 border border-gray-200">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <span className="text-blue-600">ℹ️</span>
+              Product Information
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Brand - Readonly */}
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Brand (Read Only)
+                </label>
+                <input
+                  type="text"
+                  value={brand}
+                  readOnly
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-gray-100 text-gray-600 cursor-not-allowed"
+                />
+                <div className="absolute right-3 top-9 text-gray-400">🔒</div>
+              </div>
+
+              {/* Title - Readonly */}
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Title (Read Only)
+                </label>
+                <input
+                  type="text"
+                  value={title}
+                  readOnly
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-gray-100 text-gray-600 cursor-not-allowed"
+                />
+                <div className="absolute right-3 top-9 text-gray-400">🔒</div>
+              </div>
+
+              {/* Category */}
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Category <span className="text-red-500 ml-1">*</span>
+                </label>
+                <select
+                  value={category}
+                  onChange={e => setCategory(e.target.value)}
+                  required
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-300"
+                >
+                  <option value="">Select Category</option>
+                  {validCategories.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Price */}
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Price <span className="text-red-500 ml-1">*</span>
+                </label>
+                <input
+                  type="number"
+                  value={price}
+                  onChange={e => setPrice(e.target.value)}
+                  required
+                  min={0}
+                  step="0.01"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-300"
+                />
+                <div className="absolute right-3 top-9 text-gray-500">₹</div>
+              </div>
+
+              {/* MRP */}
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  MRP
+                </label>
+                <input
+                  type="number"
+                  value={mrp}
+                  onChange={e => setMrp(e.target.value)}
+                  min={0}
+                  step="0.01"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-300"
+                />
+                <div className="absolute right-3 top-9 text-gray-500">₹</div>
+              </div>
+
+              {/* Quantity */}
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Quantity <span className="text-red-500 ml-1">*</span>
+                </label>
+                <input
+                  type="number"
+                  value={quantity}
+                  onChange={e => setQuantity(e.target.value)}
+                  required
+                  min={0}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-300"
+                />
+              </div>
+            </div>
           </div>
 
-          {/* Form */}
-          <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-            <form onSubmit={handleSubmit} className="p-8 space-y-8">
-              
-              {/* Basic Information Section */}
-              <div className="space-y-6">
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <h2 className="text-2xl font-bold text-gray-800">Basic Information</h2>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700 flex items-center">
-                      Brand <span className="text-gray-400 ml-1">(Cannot be edited)</span>
-                    </label>
-                    <input
-                      name="brand"
-                      value={productData.brand}
-                      disabled
-                      className="w-full p-4 border-2 border-gray-200 rounded-xl bg-gray-100 text-gray-500 cursor-not-allowed"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700 flex items-center">
-                      Product Title <span className="text-gray-400 ml-1">(Cannot be edited)</span>
-                    </label>
-                    <input
-                      name="title"
-                      value={productData.title}
-                      disabled
-                      className="w-full p-4 border-2 border-gray-200 rounded-xl bg-gray-100 text-gray-500 cursor-not-allowed"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700 flex items-center">
-                      Category <span className="text-red-500 ml-1">*</span>
-                    </label>
-                    <select
-                      name="category"
-                      value={productData.category}
-                      onChange={handleChange}
-                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white"
-                      required
-                    >
-                      <option value="">Select Category</option>
-                      {categoryOptions.map((cat) => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700 flex items-center">
-                      Quantity <span className="text-red-500 ml-1">*</span>
-                    </label>
-                    <input
-                      name="quantity"
-                      type="number"
-                      value={productData.quantity}
-                      onChange={handleChange}
-                      placeholder="Available quantity"
-                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white"
-                      min="0"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700 flex items-center">
-                      Price <span className="text-red-500 ml-1">*</span>
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-semibold">₹</span>
-                      <input
-                        name="price"
-                        type="number"
-                        value={productData.price}
-                        onChange={handleChange}
-                        placeholder="0.00"
-                        className="w-full pl-8 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white"
-                        min="0"
-                        step="0.01"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700">
-                      MRP <span className="text-sm text-gray-500">(optional)</span>
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-semibold">₹</span>
-                      <input
-                        name="mrp"
-                        type="number"
-                        value={productData.mrp}
-                        onChange={handleChange}
-                        placeholder="0.00"
-                        className="w-full pl-8 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white"
-                        min="0"
-                        step="0.01"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Images Section */}
-              <div className="space-y-6">
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                  <h2 className="text-2xl font-bold text-gray-800">Product Images</h2>
-                </div>
-
-                {/* Existing Main Images */}
-                {existingMainImages.length > 0 && (
-                  <div className="bg-gray-50 rounded-2xl p-6">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Current Main Images</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {existingMainImages.map((imageUrl, index) => (
-                        <div key={index} className="relative group">
-                          <img 
-                            src={imageUrl} 
-                            alt={`Product ${index + 1}`}
-                            className="w-full h-32 object-cover rounded-xl border-2 border-gray-200"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveExistingMainImage(index)}
-                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* New Main Images */}
-                <div className="bg-gray-50 rounded-2xl p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Add New Main Images</h3>
-                  <div className="space-y-4">
-                    {newMainImages.map((file, index) => (
-                      <div key={index} className="flex items-center space-x-4 p-4 bg-white rounded-xl border-2 border-dashed border-gray-300">
-                        <div className="flex-1">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => handleNewMainImageChange(index, e.target.files[0])}
-                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all duration-200"
-                          />
-                          {file && (
-                            <div className="mt-2">
-                              <img 
-                                src={URL.createObjectURL(file)} 
-                                alt="Preview" 
-                                className="w-20 h-20 object-cover rounded-lg border-2 border-gray-200"
-                              />
-                            </div>
-                          )}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveNewMainImage(index)}
-                          className="px-4 py-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200 font-medium"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={handleAddNewMainImage}
-                      className="w-full p-4 border-2 border-dashed border-indigo-300 rounded-xl text-indigo-600 hover:border-indigo-500 hover:bg-indigo-50 transition-all duration-200 flex items-center justify-center space-x-2 font-medium"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
-                      <span>Add New Main Image</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Existing Description Images */}
-                {existingDescriptionImages.length > 0 && (
-                  <div className="bg-gray-50 rounded-2xl p-6">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Current Description Images</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {existingDescriptionImages.map((imageUrl, index) => (
-                        <div key={index} className="relative group">
-                          <img 
-                            src={imageUrl} 
-                            alt={`Description ${index + 1}`}
-                            className="w-full h-32 object-cover rounded-xl border-2 border-gray-200"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveExistingDescriptionImage(index)}
-                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* New Description Images */}
-                <div className="bg-gray-50 rounded-2xl p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Add New Description Images</h3>
-                  <div className="space-y-4">
-                    {newDescriptionImages.map((file, index) => (
-                      <div key={index} className="flex items-center space-x-4 p-4 bg-white rounded-xl border-2 border-dashed border-gray-300">
-                        <div className="flex-1">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => handleNewDescriptionImageChange(index, e.target.files[0])}
-                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 transition-all duration-200"
-                          />
-                          {file && (
-                            <div className="mt-2">
-                              <img 
-                                src={URL.createObjectURL(file)} 
-                                alt="Preview" 
-                                className="w-20 h-20 object-cover rounded-lg border-2 border-gray-200"
-                              />
-                            </div>
-                          )}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveNewDescriptionImage(index)}
-                          className="px-4 py-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200 font-medium"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={handleAddNewDescriptionImage}
-                      className="w-full p-4 border-2 border-dashed border-green-300 rounded-xl text-green-600 hover:border-green-500 hover:bg-green-50 transition-all duration-200 flex items-center justify-center space-x-2 font-medium"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
-                      <span>Add New Description Image</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Description Section */}
-              <div className="space-y-6">
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                  <h2 className="text-2xl font-bold text-gray-800">Product Description</h2>
-                </div>
-
-                <div className="space-y-4">
-                  {productData.description.map((desc, index) => (
-                    <div key={index} className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-100">
-                      <div className="space-y-4">
-                        <input
-                          placeholder="Section Heading"
-                          value={desc.heading}
-                          onChange={(e) => handleDescriptionChange(index, "heading", e.target.value)}
-                          className="w-full p-4 border-2 border-purple-200 rounded-xl focus:border-purple-500 focus:outline-none transition-all duration-200 bg-white font-medium"
-                        />
-                        <textarea
-                          placeholder="Detailed description text..."
-                          value={desc.text}
-                          onChange={(e) => handleDescriptionChange(index, "text", e.target.value)}
-                          className="w-full p-4 border-2 border-purple-200 rounded-xl focus:border-purple-500 focus:outline-none transition-all duration-200 bg-white resize-none"
-                          rows="4"
-                        />
-                        {desc.image && (
-                          <div className="mt-2">
-                            <img 
-                              src={desc.image} 
-                              alt={`Description ${index + 1}`}
-                              className="w-32 h-32 object-cover rounded-lg border-2 border-purple-200"
-                            />
-                            <p className="text-sm text-purple-600 mt-1">Existing image</p>
-                          </div>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveDescription(index)}
-                          className="px-6 py-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200 font-medium flex items-center space-x-2"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                          <span>Remove Section</span>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={handleAddDescription}
-                    className="w-full p-6 border-2 border-dashed border-purple-300 rounded-2xl text-purple-600 hover:border-purple-500 hover:bg-purple-50 transition-all duration-200 flex items-center justify-center space-x-2 font-medium"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    <span>Add Description Section</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Specifications Section */}
-              <div className="space-y-6">
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                    </svg>
-                  </div>
-                  <h2 className="text-2xl font-bold text-gray-800">Product Specifications</h2>
-                </div>
-
-                <div className="space-y-4">
-                  {productData.specifications.map((spec, index) => (
-                    <div key={index} className="bg-gradient-to-r from-orange-50 to-red-50 rounded-2xl p-6 border border-orange-100">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input
-                          placeholder="Specification Key (e.g., Brand, Model, Color)"
-                          value={spec.key}
-                          onChange={(e) => handleSpecChange(index, "key", e.target.value)}
-                          className="w-full p-4 border-2 border-orange-200 rounded-xl focus:border-orange-500 focus:outline-none transition-all duration-200 bg-white font-medium"
-                        />
-                        <input
-                          placeholder="Specification Value (e.g., Samsung, Galaxy S21, Black)"
-                          value={spec.value}
-                          onChange={(e) => handleSpecChange(index, "value", e.target.value)}
-                          className="w-full p-4 border-2 border-orange-200 rounded-xl focus:border-orange-500 focus:outline-none transition-all duration-200 bg-white"
+          {/* Main Images Section */}
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <span className="text-green-600">🖼️</span>
+              Main Product Images
+            </h3>
+            
+            {/* Existing Images */}
+            {mainImages.some(img => !img.toRemove) && (
+              <div className="mb-6">
+                <h4 className="text-lg font-medium text-gray-700 mb-3">Current Images</h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                  {mainImages.map((img, i) => !img.toRemove && (
+                    <div key={i} className="relative group">
+                      <div className="w-full h-32 bg-white rounded-xl overflow-hidden shadow-md border border-gray-200 hover:shadow-lg transition-shadow duration-200">
+                        <img
+                          src={img.url}
+                          alt=""
+                          className="w-full h-full object-cover"
                         />
                       </div>
                       <button
                         type="button"
-                        onClick={() => handleRemoveSpec(index)}
-                        className="mt-4 px-6 py-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200 font-medium flex items-center space-x-2"
+                        onClick={() => handleMainImageRemove(i)}
+                        className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-7 h-7 text-sm flex items-center justify-center shadow-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                        <span>Remove Specification</span>
+                        ✕
                       </button>
                     </div>
                   ))}
-                  <button
-                    type="button"
-                    onClick={handleAddSpec}
-                    className="w-full p-6 border-2 border-dashed border-orange-300 rounded-2xl text-orange-600 hover:border-orange-500 hover:bg-orange-50 transition-all duration-200 flex items-center justify-center space-x-2 font-medium"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    <span>Add Specification</span>
-                  </button>
                 </div>
               </div>
+            )}
 
-              {/* Submit Button */}
-              <div className="pt-8">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-3 text-lg"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      <span>Updating Product...</span>
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                      <span>Update Product</span>
-                    </>
-                  )}
-                </button>
+            {/* Add New Images */}
+            <div className="border-2 border-dashed border-green-300 rounded-xl p-6 bg-white/50 hover:bg-white/70 transition-colors duration-200">
+              <label className="block text-lg font-medium text-gray-700 mb-3">Add New Images</label>
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleAddMainImages}
+                className="w-full file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-green-600 file:text-white file:cursor-pointer hover:file:bg-green-700 transition-colors"
+              />
+              <p className="text-sm text-gray-600 mt-2">Upload multiple images (JPG, PNG, WEBP)</p>
+            </div>
+
+            {/* New Images Preview */}
+            {newMainImagesFiles.length > 0 && (
+              <div className="mt-6">
+                <h4 className="text-lg font-medium text-gray-700 mb-3">New Images to Add</h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                  {newMainImagesFiles.map((file, i) => (
+                    <div key={i} className="relative group">
+                      <div className="w-full h-32 bg-white rounded-xl overflow-hidden shadow-md border border-green-200 hover:shadow-lg transition-shadow duration-200">
+                        <img
+                          src={URL.createObjectURL(file)}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveNewMainImage(i)}
+                        className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-7 h-7 text-sm flex items-center justify-center shadow-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </form>
+            )}
+          </div>
+
+          {/* Description Section */}
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-200">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                <span className="text-purple-600">📝</span>
+                Product Descriptions
+              </h3>
+              <button
+                type="button"
+                onClick={handleAddDescription}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+              >
+                <span>+</span>
+                Add Description
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              {description.filter(d => !d.toRemove).map((desc, i) => (
+                <div key={i} className="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-purple-200 relative">
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveDescription(i)}
+                    className="absolute top-4 right-4 text-red-500 hover:text-red-700 w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center transition-colors duration-200"
+                  >
+                    ✕
+                  </button>
+                  
+                  <div className="space-y-4 pr-8">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Heading</label>
+                      <input
+                        type="text"
+                        value={desc.heading}
+                        onChange={e => updateDescriptionField(i, "heading", e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-white/70 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                        placeholder="Enter section heading"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                      <textarea
+                        value={desc.text}
+                        onChange={e => updateDescriptionField(i, "text", e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-white/70 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 resize-none"
+                        rows="4"
+                        placeholder="Enter detailed description"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Image</label>
+                      
+                      {/* Current Image */}
+                      {desc.imageUrl && !desc.newImageFile && (
+                        <div className="mb-3">
+                          <div className="relative inline-block">
+                            <img
+                              src={desc.imageUrl}
+                              alt=""
+                              className="w-32 h-32 object-cover rounded-xl shadow-md border border-gray-200"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => updateDescriptionField(i, "imageUrl", "")}
+                              className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 text-sm flex items-center justify-center shadow-lg transition-all duration-200"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                          <p className="text-sm text-gray-600 mt-1">Current image</p>
+                        </div>
+                      )}
+
+                      {/* New Image Preview */}
+                      {desc.newImageFile && (
+                        <div className="mb-3">
+                          <img
+                            src={URL.createObjectURL(desc.newImageFile)}
+                            alt=""
+                            className="w-32 h-32 object-cover rounded-xl shadow-md border border-purple-200"
+                          />
+                          <p className="text-sm text-gray-600 mt-1">New image to upload</p>
+                        </div>
+                      )}
+
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={e => handleDescriptionImageChange(i, e)}
+                        className="w-full file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-600 file:text-white file:cursor-pointer hover:file:bg-purple-700 transition-colors"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              {description.filter(d => !d.toRemove).length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  <p>No descriptions added yet. Click "Add Description" to get started.</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Specifications Section */}
+          <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-2xl p-6 border border-orange-200">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                <span className="text-orange-600">⚙️</span>
+                Product Specifications
+              </h3>
+              <button
+                type="button"
+                onClick={addSpecGroup}
+                className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+              >
+                <span>+</span>
+                Add Spec Group
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {specifications.map((group, gi) => (
+                <div key={gi} className="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-orange-200 relative">
+                  <button
+                    type="button"
+                    onClick={() => removeSpecGroup(gi)}
+                    className="absolute top-4 right-4 text-red-500 hover:text-red-700 w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center transition-colors duration-200"
+                  >
+                    ✕
+                  </button>
+                  
+                  <div className="space-y-4 pr-8">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Group Heading</label>
+                      <input
+                        type="text"
+                        value={group.heading}
+                        onChange={e => updateSpecHeading(gi, e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-white/70 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                        placeholder="e.g., Technical Specifications, Dimensions, etc."
+                      />
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {group.specs.map((spec, si) => (
+                        <div key={si} className="flex gap-3 items-center bg-white/50 p-3 rounded-lg">
+                          <input
+                            type="text"
+                            placeholder="Specification name"
+                            value={spec.key}
+                            onChange={e => updateSpecKey(gi, si, e.target.value)}
+                            className="flex-1 px-3 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Value"
+                            value={spec.value}
+                            onChange={e => updateSpecValue(gi, si, e.target.value)}
+                            className="flex-1 px-3 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeSpecInGroup(gi, si)}
+                            className="text-red-500 hover:text-red-700 w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center transition-colors duration-200"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                      
+                      <button
+                        type="button"
+                        onClick={() => addSpecInGroup(gi)}
+                        className="w-full py-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors duration-200 font-medium"
+                      >
+                        + Add Specification
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              {specifications.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  <p>No specification groups added yet. Click "Add Spec Group" to get started.</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="flex justify-center pt-6">
+            <button 
+              type="submit" 
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-12 py-4 rounded-2xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 flex items-center gap-3"
+            >
+              <span className="text-xl">💾</span>
+              Update Product
+            </button>
           </div>
         </div>
-      </div>
+      </form>
     </div>
-  );
+  </div>
+);
 }
 
 export default EditProduct;
