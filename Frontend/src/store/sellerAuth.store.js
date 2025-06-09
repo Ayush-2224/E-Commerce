@@ -65,20 +65,23 @@ export const useSellerAuthStore = create((set,get) => ({
             set({isLoggingIn:false})
         }
     },
-    // updateProfile: async(formData)=>{
-    //     set({isUpdatingProfile:true})
-    //     try {
-    //         const response = await axiosInstance.put('/auth/update-profile',formData)
-    //         set({authUser:response.data})
-    //         toast.success("Profile updated successfully")
-    //     } catch (error) {``
-    //         console.log(error)
-    //         toast.error(error.response.data.message)
-    //     }
-    //     finally{
-    //         set({isUpdatingProfile:false})
-    //     }
-    // },
+    updateProfile: async(formData)=>{
+        set({isUpdatingProfile:true})
+        try {
+            const response = await axiosInstance.post('/seller/edit-profile',formData)
+            set({authSeller:response.data})
+            toast.success("Profile updated successfully")
+            const updatedSeller= response.data.updatedUserData
+            set({ authSeller: updatedSeller });
+            return {updatedSeller}
+        } catch (error) {
+            console.log(error)
+            toast.error(error.response.data.message)
+        }
+        finally{
+            set({isUpdatingProfile:false})
+        }
+    },
     addProduct: async(formData)=>{
         try {
             const res=await axiosInstance.post('/product/addProduct',formData)

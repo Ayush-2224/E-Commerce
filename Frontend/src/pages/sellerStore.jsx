@@ -2,16 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { axiosInstance } from '../lib/axios.js';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-
+import LoadingSpinner from '../components/UIElements/LoadingSpinner.jsx';
 function SellerStore() {
     const [products, setProducts] = useState([]);
     const navigate = useNavigate();
-
+    const [loading, setLoading] = useState(true);
     useEffect(() => {
         getProducts();
     }, []);
 
     const getProducts = async () => {
+        setLoading(true);
         try {
             const response = await axiosInstance.get('/product/getProductsBySeller');
             setProducts(response.data.products);
@@ -19,6 +20,8 @@ function SellerStore() {
         } catch (error) {
             console.log(error);
             toast.error("Failed to fetch products");
+        }finally {
+            setLoading(false);
         }
     };
 
@@ -32,6 +35,7 @@ function SellerStore() {
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Header with Add Product Button */}
+            {loading && <LoadingSpinner asOverlay />}
             <div className="bg-white shadow-sm border-b">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center py-6">

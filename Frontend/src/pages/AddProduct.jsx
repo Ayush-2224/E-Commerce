@@ -159,7 +159,7 @@ const AddProduct = () => {
                         <img
                           src={URL.createObjectURL(img)}
                           alt={`main-${idx}`}
-                          className="w-full h-full object-cover"
+                          className="object-contain w-full h-full"
                         />
                       </div>
                       <button

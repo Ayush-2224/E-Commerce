@@ -96,4 +96,35 @@ const checkAuth=async(req,res,next)=>{
         return next(new HttpError("ISE", 400))
     }
 }
-export {signup, login, logout, checkAuth};
+
+const editProfile = async (req, res,next) => {  
+    try {
+        const id = req.sellerData._id;
+        const { username, address} = req.body;
+        const dbUser = await Seller.findById(id);
+        if (!dbUser) {
+            return next(new HttpError("User not found", 404));
+        }
+        if(username && username.trim()!==""){
+            dbUser.username = username;
+        }
+        if(address && address.trim()!==""){
+            dbUser.address = address;
+        }
+        
+        if(req.file) {
+            const result = await uploadToCloudinary(req.file.buffer);
+            dbUser.profilePic = result.secure_url;
+        }
+        
+        await dbUser.save({ validateBeforeSave: false });
+        const info= await Seller.findById(id).select("-password -__v");
+
+        return res.status(200).json({updatedUserData: info, message: "Profile updated successfully" });
+
+    } catch (error) {
+        return next(new HttpError(400, "Internal Server Error"));
+
+    }
+}
+export {signup, login, logout, checkAuth, editProfile};
