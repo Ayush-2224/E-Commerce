@@ -11,9 +11,13 @@ const ProductImageGallery = ({ images , productId }) => {
   const isLoggedIn = !!authUser;
   const navigate = useNavigate();
     const addtoCartHandler = async () => {
-        if(!isLoggedIn){
-          navigate("/user/login");
-          return
+        if(!isLoggedIn && !check){
+          const items = JSON.parse(localStorage.getItem("cartItems"));
+          items.push({ id: productId, qty: 1 });
+          localStorage.setItem("cartItems", JSON.stringify(items));
+          setCheck(true);
+          toast.success("Product added to cart");
+          return;
         }
         if(check === true){
             navigate("/cart");
@@ -43,7 +47,10 @@ const ProductImageGallery = ({ images , productId }) => {
     useEffect(() => {
         const checkProductInCart = async () => {
           if(!isLoggedIn){
-          return
+            const items = JSON.parse(localStorage.getItem("cartItems")) || [];
+            const productExists = items.some(item => item.id === productId);
+            setCheck(productExists);
+            return;
         }
         try{
             const response = await axiosInstance.get(`cart/check/${productId}`);

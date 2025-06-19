@@ -25,41 +25,54 @@ import SellerStore from './pages/sellerStore';
 import UserReviews from './pages/UserReviews';
 import EditProduct from './pages/EditProduct';
 import SellerProfile from './pages/sellerProfile';
+import { useUserAuthStore } from './store/userAuth.store';
+import { useEffect } from 'react';
 // import EditProduct from './pages/EditProduct';
 function App() {
-  
+  const authUser = useUserAuthStore((state) => state.authUser);
+  const isLoggedIn = !!authUser;
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      if (!localStorage.getItem("cartItems")) {
+        localStorage.setItem("cartItems", JSON.stringify([]));
+      }
+    }
+  }, [isLoggedIn]);
+
+
   return (
     <BrowserRouter>
-    <Routes>
-    <Route element={<NavPages/>}>
-      <Route path='/cart' element={<Cart/>} />
-      <Route path="product/:productId" element={<Product />} />
-      <Route path="/search" element={<Search />} />
-      <Route path='/order' element={<Order/>} />
-      <Route path="/buy/:productId" element={<BuyNowPage/>} />
-      <Route path="/reviews/:productId" element={<ProductReviews/>} />
-      <Route path="/product/:productId/review" element={<Review/>} />
-      <Route path="/user/profile" element={<Profile/>} />
-      <Route path="/user/reviews" element={<UserReviews/>} />
-      <Route path="user/forget-password" element={<ForgotPassword/>}/>
-      <Route path="user/reset-password/:token" element={<ResetPassword/>}/>
-    </Route>
+      <Routes>
+        <Route element={<NavPages />}>
+          <Route path='/cart' element={<Cart />} />
+          <Route path="product/:productId" element={<Product />} />
+          <Route path="/search" element={<Search />} />
+          <Route path='/order' element={<Order />} />
+          <Route path="/buy/:productId" element={<BuyNowPage />} />
+          <Route path="/reviews/:productId" element={<ProductReviews />} />
+          <Route path="/product/:productId/review" element={<Review />} />
+          <Route path="/user/profile" element={<Profile />} />
+          <Route path="/user/reviews" element={<UserReviews />} />
+          <Route path="user/forget-password" element={<ForgotPassword />} />
+          <Route path="user/reset-password/:token" element={<ResetPassword />} />
+        </Route>
 
-    {/* Auth pages without Nav + Footer */}
-    <Route element={<AuthPages />}>
-      <Route path="seller/add-product" element={<AddProduct />} />
-      <Route path="seller/profile" element={<SellerProfile />} />
-      <Route path="/user/login" element={<UserLogin />} />
-      <Route path="/user/signup" element={<UserSignup />} />
-      <Route path="/seller/login" element={<SellerLogin/>} />
-      <Route path="/seller/signup" element={<SellerSignup />} />
-      <Route path="/seller/store" element={<SellerStore />} />
-      <Route path="/seller/edit-product/:id" element={<EditProduct />} />
-      {/* <Route path="/seller/edit-product/:id" element={<EditProduct />} /> */}
-    </Route>
-  </Routes>
-  <Toaster/>
-  </BrowserRouter>
+        {/* Auth pages without Nav + Footer */}
+        <Route element={<AuthPages />}>
+          <Route path="seller/add-product" element={<AddProduct />} />
+          <Route path="seller/profile" element={<SellerProfile />} />
+          <Route path="/user/login" element={<UserLogin />} />
+          <Route path="/user/signup" element={<UserSignup />} />
+          <Route path="/seller/login" element={<SellerLogin />} />
+          <Route path="/seller/signup" element={<SellerSignup />} />
+          <Route path="/seller/store" element={<SellerStore />} />
+          <Route path="/seller/edit-product/:id" element={<EditProduct />} />
+          {/* <Route path="/seller/edit-product/:id" element={<EditProduct />} /> */}
+        </Route>
+      </Routes>
+      <Toaster />
+    </BrowserRouter>
   );
 }
 

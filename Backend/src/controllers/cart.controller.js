@@ -25,6 +25,34 @@ async function fetfetchCartWithDetails(userId) {
     return cart;
 }
 
+const getProducts = async (req, res, next) => {
+    const products = req.body.products; // Expecting an array of product IDs
+    if (!Array.isArray(products) || products.length === 0) {        
+        return next(new HttpError("Invalid product list", 400));
+    }
+
+    try{
+        let cart = { products: [] };
+        for(const item of products){
+            const productId = item.id;
+            let product = await Product.findById(productId).populate("seller", "username");
+            if(!product){
+                continue; // Skip if product not found
+            }
+           
+            cart.products.push({
+                productId: product,
+                quantity: item.qty || 1 // Default quantity to 1 if not provided
+            });
+        }
+        res.status(200).json({message: "Products fetched successfully", cart});
+    }catch (error) {
+        console.log(error);
+        
+        return next(new HttpError("Failed to fetch products", 500));
+    }
+}
+
 const addProductToCart = async (req, res, next) => {
     const { quantity = 1 } = req.body;
     const {productId} = req.params;
@@ -143,4 +171,4 @@ const changeQuantityFromCart =async(req,res,next)=>{
 }
 
 
-export {addProductToCart,getCart,removeProductFromCart,changeQuantityFromCart, checkProductinCart}
+export {addProductToCart,getCart,removeProductFromCart,changeQuantityFromCart, checkProductinCart, getProducts}

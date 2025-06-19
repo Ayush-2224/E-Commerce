@@ -78,7 +78,7 @@ const logout=async(req,res,next)=>{
         return res.status(200).json({message:"logout completed successfully"})
     } catch (error) {
         console.log("logout: ", error)
-        return next(new HttpError("ISE", 400))
+        return next(new HttpError("ISEjkkj", 400))
     }
 }
 const checkAuth=async(req,res,next)=>{
