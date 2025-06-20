@@ -25,11 +25,24 @@ import SellerStore from './pages/sellerStore';
 import UserReviews from './pages/UserReviews';
 import EditProduct from './pages/EditProduct';
 import SellerProfile from './pages/sellerProfile';
+import { useUserAuthStore } from './store/userAuth.store';
+import { useEffect } from 'react';
 // import EditProduct from './pages/EditProduct';
 import BuyNowPage from './pages/BuyNowPage';
 import HomePage from './pages/home';
 function App() {
-  
+  const authUser = useUserAuthStore((state) => state.authUser);
+  const isLoggedIn = !!authUser;
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      if (!localStorage.getItem("cartItems")) {
+        localStorage.setItem("cartItems", JSON.stringify([]));
+      }
+    }
+  }, [isLoggedIn]);
+
+
   return (
     <BrowserRouter>
     <Routes>
@@ -48,21 +61,21 @@ function App() {
       <Route path="/" element={<HomePage />} />
     </Route>
 
-    {/* Auth pages without Nav + Footer */}
-    <Route element={<AuthPages />}>
-      <Route path="seller/add-product" element={<AddProduct />} />
-      <Route path="seller/profile" element={<SellerProfile />} />
-      <Route path="/user/login" element={<UserLogin />} />
-      <Route path="/user/signup" element={<UserSignup />} />
-      <Route path="/seller/login" element={<SellerLogin/>} />
-      <Route path="/seller/signup" element={<SellerSignup />} />
-      <Route path="/seller/store" element={<SellerStore />} />
-      <Route path="/seller/edit-product/:id" element={<EditProduct />} />
-      {/* <Route path="/seller/edit-product/:id" element={<EditProduct />} /> */}
-    </Route>
-  </Routes>
-  <Toaster/>
-  </BrowserRouter>
+        {/* Auth pages without Nav + Footer */}
+        <Route element={<AuthPages />}>
+          <Route path="seller/add-product" element={<AddProduct />} />
+          <Route path="seller/profile" element={<SellerProfile />} />
+          <Route path="/user/login" element={<UserLogin />} />
+          <Route path="/user/signup" element={<UserSignup />} />
+          <Route path="/seller/login" element={<SellerLogin />} />
+          <Route path="/seller/signup" element={<SellerSignup />} />
+          <Route path="/seller/store" element={<SellerStore />} />
+          <Route path="/seller/edit-product/:id" element={<EditProduct />} />
+          {/* <Route path="/seller/edit-product/:id" element={<EditProduct />} /> */}
+        </Route>
+      </Routes>
+      <Toaster />
+    </BrowserRouter>
   );
 }
 
