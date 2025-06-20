@@ -103,7 +103,7 @@ const editProfile = async (req, res,next) => {
         const { username, address} = req.body;
         const dbUser = await Seller.findById(id);
         if (!dbUser) {
-            return next(new HttpError("User not found", 404));
+           return res.status(404).json({ message: "Seller not found" });
         }
         if(username && username.trim()!==""){
             dbUser.username = username;

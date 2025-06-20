@@ -1,8 +1,9 @@
 import Product from '../models/product.model.js'
 import HttpError from '../models/http-error.js'
 import cloudinary, { uploadToCloudinary } from '../lib/cloudinary.js'
-import { json } from 'express';
-
+import History from '../models/history.model.js'
+import axios from 'axios'
+import jwt from 'jsonwebtoken'
 const addProduct = async (req, res, next) => {
   try {
     console.log("Adding product with data:", req.body);
@@ -132,22 +133,40 @@ const addProduct = async (req, res, next) => {
   }
 };
 
+
 const getProductById = async (req, res, next) => {
+  
   try {
-    const { id } = req.params
-    console.log(id)
-    const product = await Product.findById(id)
+    const { id } = req.params;
     
+    const token = req.cookies?.jwt;
+    const product = await Product.findById(id);
     if (!product) {
-      return next(new HttpError("Product not found", 404))
+      return next(new HttpError("Product not found", 404));
     }
 
-    return res.status(200).json(product)
-  } catch (error) {
-    return next(new HttpError("Internal Server Error", 500))
-  }
-}
+    if (token) {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET_USER);
+      const userId = decoded.userId;
+      await History.deleteOne({ userId, productId: id });
+      await History.create({ userId, productId: id });
 
+      const history = await History.find({ userId }).sort({ createdAt: -1 });
+      if (history.length > 10) {
+        const excess = history.slice(10);
+        const idsToRemove = excess.map(entry => entry._id);
+        await History.deleteMany({ _id: { $in: idsToRemove } });
+      }
+    }
+
+    return res.status(200).json(product);
+  } catch (error) {
+    console.error(error);
+    return next(new HttpError("Internal Server Error", 500));
+  }
+};
+
+export default getProductById;
 // change to filter
 const getProductsByCategory = async (req, res, next) => {
   try {
@@ -414,5 +433,48 @@ const searchProducts = async (req, res, next) => {
   }
 };
 
+const retrainModel = async (req, res) => {
+  try {
+    const products = await Product.find({});
+    console.log("Retraining model with products:", products.length);
+    const response = await axios.post("http://localhost:5000/retrain", {
+      products,
+    });
 
-export { addProduct, getProductById, getProductsByCategory, editProduct, getProductsBySeller, searchProducts };
+    res.status(200).json({ message: "Model retrained successfully", data: response.data });
+  } catch (error) {
+    console.error("Retraining failed:", error.message);
+    res.status(500).json({ error: "Retraining failed" });
+  }
+};
+
+
+const Recommendation = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1. Call Flask API
+    const response = await axios.get(`http://localhost:5000/recommend/${id}`);
+    const { recommended } = response.data;
+
+    // 2. Fetch product details from MongoDB
+   const products = await Product.find({ _id: { $in: recommended } })
+  .select("_id imageUrl");
+
+const formatted = products.map(p => ({
+  _id: p._id,
+  image: p.imageUrl?.[0] || null
+}));
+
+
+    return res.status(200).json({ recommended: formatted });
+
+  } catch (error) {
+    console.error("Recommendation error:", error.message);
+    return res.status(500).json({ error: "Failed to get recommendations" });
+  }
+};
+
+
+
+export { addProduct, getProductById, getProductsByCategory, editProduct, getProductsBySeller, searchProducts, retrainModel,Recommendation };

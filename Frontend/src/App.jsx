@@ -13,7 +13,7 @@ import NavPages from './util/NavPages';
 import { Toaster } from 'react-hot-toast';
 import Order from './pages/order';
 import Cart from './pages/cart';
-import BuyNowPage from './pages/home';
+//import BuyNowPage from './pages/home';
 import ProductReviews from './pages/ProductReviews';
 import Review from './pages/Review';
 import Profile from './pages/Profile';
@@ -26,6 +26,8 @@ import UserReviews from './pages/UserReviews';
 import EditProduct from './pages/EditProduct';
 import SellerProfile from './pages/sellerProfile';
 // import EditProduct from './pages/EditProduct';
+import BuyNowPage from './pages/BuyNowPage';
+import HomePage from './pages/home';
 function App() {
   
   return (
@@ -43,6 +45,7 @@ function App() {
       <Route path="/user/reviews" element={<UserReviews/>} />
       <Route path="user/forget-password" element={<ForgotPassword/>}/>
       <Route path="user/reset-password/:token" element={<ResetPassword/>}/>
+      <Route path="/" element={<HomePage />} />
     </Route>
 
     {/* Auth pages without Nav + Footer */}

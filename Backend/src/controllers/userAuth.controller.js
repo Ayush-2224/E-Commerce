@@ -1,12 +1,13 @@
 import User from "../models/user.model.js";
-import cloudinary, { uploadToCloudinary } from "../lib/cloudinary.js";
+import { uploadToCloudinary } from "../lib/cloudinary.js";
 import HttpError from "../models/http-error.js";
 import generateTokenUser from "../lib/user.generateToken.js";
 import passport from "../Auth/google.js";
 import jwt from "jsonwebtoken";
 import transporter from "../lib/nodeMailer.js";
+import History from "../models/history.model.js";
 const signup = async(req,res,next)=>{
-    console.log("called");
+    //console.log("called");
     try {
         const {username,password,email,address}=req.body;
         if([email,username,password,address].some((field)=>
@@ -35,7 +36,7 @@ const signup = async(req,res,next)=>{
 
         if(!newUser) return res.status(500).json({message:"Invalid User Data"})
         await newUser.save()
-    console.log("saved")
+   // console.log("saved")
     // generate token
     generateTokenUser(newUser._id,res)
         return res.status(200).json({
@@ -53,23 +54,30 @@ const signup = async(req,res,next)=>{
 }
 
 const login= async(req,res,next)=>{
-    const {email,password}=req.body
-    if(!email || email.trim()==="") return res.status(400).json({message:"Email is required"})
-    if(!password || password.trim()==="") return res.status(400).json({message:"Password is required"})
-    const user = await User.findOne({email})
-    if(!user) return res.status(400).json({message:"Invalid credentials email"})
-    const isPasswordCorrect=await user.isPasswordCorrect(password)
-    if(!isPasswordCorrect){
-        return res.status(400).json({message:"Invalid credentials password"})
-    }
-    generateTokenUser(user._id,res)
-    // console.log("login success");
-    return res.status(200).json({
-        _id:user._id,
-        username:user.username,
-        email:user.email,
-        profilePic:user.profilePic
-    })
+   // console.log("login called");
+   try {
+     const {email,password}=req.body
+     if(!email || email.trim()==="") return res.status(400).json({message:"Email is required"})
+     if(!password || password.trim()==="") return res.status(400).json({message:"Password is required"})
+     const user = await User.findOne({email})
+     if(!user) return res.status(400).json({message:"Invalid credentials email"})
+     const isPasswordCorrect=await user.isPasswordCorrect(password)
+     if(!isPasswordCorrect){
+         return res.status(400).json({message:"Invalid credentials"})
+     }
+     generateTokenUser(user._id,res)
+     // console.log("login success");
+     return res.status(200).json({
+         _id:user._id,
+         username:user.username,
+         email:user.email,
+         profilePic:user.profilePic
+     })
+   } catch (error) {
+       console.log("login error",error)
+       return next(new HttpError("ISE", 400))
+    
+   }
 }
 
 const logout=async(req,res,next)=>{
@@ -114,7 +122,7 @@ const checkAuth=async(req,res,next)=>{
       return res.redirect(`${clientURL}`);
         
       } catch (err) {
-        console.error('Google callback error:', err);
+        //console.error('Google callback error:', err);
         return res.redirect(`${clientURL}/user/signup`);
       }
     }
@@ -138,10 +146,10 @@ const checkAuth=async(req,res,next)=>{
        subject: "Password Reset",
        html: `<p>Click <a href="${resetURL}">here</a> to reset your password</p>`,
      });
-     return res.json({ msg: "Reset email sent" });
+     return res.json({ message: "Reset email sent" });
  
    } catch (error) {
-     console.log("forgotPassword error", error);
+     //console.log("forgotPassword error", error);
      return next(new HttpError("ISE", 400));
    }
   }
@@ -170,7 +178,7 @@ const checkAuth=async(req,res,next)=>{
         const { username, address} = req.body;
         const dbUser = await User.findById(id);
         if (!dbUser) {
-            return next(new HttpError("User not found", 404));
+            return res.status(404).json({ message: "User not found" });
         }
         if(username && username.trim()!==""){
             dbUser.username = username;
@@ -195,4 +203,27 @@ const checkAuth=async(req,res,next)=>{
     }
 
 }
-export {signup,login,logout,checkAuth,googleAuth,googleCallback,forgotPassword,resetPassword,editProfile}
+const userHistory = async (req, res, next) => {
+  try {
+    const userId=req.userData._id;
+    const history = await History.find({ userId })
+      .sort({ createdAt: -1 })
+      .populate("productId", "title price imageUrl");
+
+    const formatted = history.map(entry => {
+  const product = entry.productId;
+  return {
+    _id: product._id,
+    image: product.imageUrl?.[0] || null
+  };
+});
+
+    return res.status(200).json({ history: formatted });
+
+  } catch (error) {
+    console.error("userHistory error:", error);
+    return next(new HttpError("Internal Server Error", 500));
+  }
+};
+
+export {signup,login,logout,checkAuth,googleAuth,googleCallback,forgotPassword,resetPassword,editProfile,userHistory}

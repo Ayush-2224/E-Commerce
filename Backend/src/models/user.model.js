@@ -46,7 +46,7 @@ userSchema.pre("save", async function(next) {
 
 userSchema.pre("save", async function(next) {
    if (!this.isNew) {
-      console.log("User already exists");
+      //console.log("User already exists");
       return next();
    }
 

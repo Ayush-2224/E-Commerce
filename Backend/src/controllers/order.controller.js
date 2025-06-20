@@ -25,7 +25,7 @@ const createOrderbyProductId = async (req, res, next) => {
     const { price } = product;
     const razorpayOrder = await confirmOrder(price);
     res.status(201).json({
-      success: true,
+      message: "Your order has been placed successfully",
       razorpayOrder,
       key: process.env.RAZORPAY_KEY_ID,
       username: req.userData.username,
@@ -49,7 +49,7 @@ const confirmOrder = async (price) => {
     return razorpayOrder;
   } catch (error) {
     console.error("Error confirming order:", error);
-    throw new Error("Failed to confirm order");
+   return new HttpError("Failed to confirm order", 500);
   }
 };
 
@@ -221,7 +221,7 @@ const createOrderbyCartId = async (req, res, next) => {
     session.endSession();
 
     res.status(201).json({
-      success: true,
+      message: "Your order has been placed successfully",
       razorpayOrder,
       key: process.env.RAZORPAY_KEY_ID,
       products: orders,

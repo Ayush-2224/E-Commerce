@@ -1,8 +1,8 @@
 import express from 'express';
-import { addProduct, getProductById, getProductsByCategory, getProductsBySeller ,editProduct,searchProducts} from '../controllers/product.controller.js';
+import { addProduct, getProductById, getProductsByCategory, getProductsBySeller ,editProduct,searchProducts,retrainModel,Recommendation} from '../controllers/product.controller.js';
 import verifySellerAuthentication from '../middleware/sellerAuth.middleware.js';
 import fileUpload from '../middleware/file-upload.js';
-
+import verifyUserAuthentication from '../middleware/userAuth.middleware.js';
 const router = express.Router();
 
 
@@ -19,5 +19,7 @@ router.post('/editProduct/:id',verifySellerAuthentication,fileUpload.fields([
 ]),editProduct)
 router.get('/getProductsBySeller',verifySellerAuthentication,getProductsBySeller)
 router.get('/search',searchProducts)
+//router.post('/retrainModel', retrainModel);
+router.get("/recommend/:id", Recommendation);
 
 export default router;

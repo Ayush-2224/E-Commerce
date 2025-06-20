@@ -2,6 +2,7 @@ import Order from "../models/order.model";
 import cron from "node-cron"
 import razorpay from "../lib/razorpay.js";
 import Payment from "../models/Payment.model.js";
+import { retrainModel } from "../controllers/retrainController.js";
 cron.schedule("0 0 * * *", async () => {
     try {
         const now = new Date();
@@ -48,3 +49,10 @@ async function payseller(order) {
         console.error(`Failed payout for order ${order._id}`, err);
     }
 }
+
+
+// Every Monday at midnight
+cron.schedule("0 0 * * 1", async () => {
+  console.log("⏰ Starting weekly retraining...");
+  await retrainModel({ params: {} }, { status: () => ({ json: console.log }) });
+});
