@@ -81,7 +81,6 @@ const Cart = () => {
                 return item;
             });
 
-            updatedCart = updatedCart.filter(item => item.qty > 0); // Remove items with quantity 0
             
             localStorage.setItem("cartItems", JSON.stringify(updatedCart));
             setCart(prevCart => ({
