@@ -56,6 +56,7 @@ const getProducts = async (req, res, next) => {
 const addProductToCart = async (req, res, next) => {
     const { quantity = 1 } = req.body;
     const {productId} = req.params;
+    console.log("Adding product to cart:", productId, "Quantity:", quantity);
     const userId = req.userData._id;
     try {
         const cart = await Cart.findOne({userId});

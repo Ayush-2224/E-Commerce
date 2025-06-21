@@ -22,7 +22,7 @@ const MainNavigation = () => {
     const location = useLocation();
     const [searchTerm, setSearchTerm] = useState("");
     const authUser = useUserAuthStore((state) => state.authUser);
-    const logout = useUserAuthStore((state) => state.logout);
+    const {logout} = useUserAuthStore();
     const isLoggedIn = !!authUser;
     useEffect(() => {
         const params = new URLSearchParams(location.search);

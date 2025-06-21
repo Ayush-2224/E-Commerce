@@ -5,7 +5,7 @@ import CartProduct from '../components/UIElements/cartProduct';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { useUserAuthStore } from '../store/userAuth.store';
-import { set } from 'mongoose';
+
 const Cart = () => {
     const { checkAuth, authUser } = useUserAuthStore()
     const isLoggedIn = !!authUser;

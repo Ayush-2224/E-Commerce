@@ -6,7 +6,7 @@ const router= Router();
 
 router.route("/signup").post(fileUpload.single("profilePic") ,userSignup)
 router.route("/login").post(userLogin)
-router.route("/logout").get(userLogout)
+router.route("/logout").post(userLogout)
 router.route("/userInfo").get(verifyUserAuthentication,userCheckAuth)
 router.get('/auth/google', googleAuth);
 router.get('/auth/google/callback', googleCallback);

@@ -1,7 +1,36 @@
 import React from 'react';
 import { Star, Shield, Truck, RefreshCw } from 'lucide-react';
+import { useEffect } from 'react';
+import { axiosInstance } from '../lib/axios';
+import { useUserAuthStore } from '../store/userAuth.store';
 
 export default function HomePage() {
+  const {authUser}= useUserAuthStore()
+  const isLoggedIn=!!authUser;
+  useEffect(() => {
+  const syncLocalCart = async () => {
+    const storedCart = JSON.parse(localStorage.getItem("cartItems")) || [];
+    console.log(storedCart)
+    for (const item of storedCart) {
+      if (item.id && item.qty) {
+        try {
+          await axiosInstance.post(`/cart/add/${item.id}`, {
+            quantity: item.qty,
+          });
+        } catch (err) {
+          console.error(`Failed to sync product ${item.id}`, err);
+        }
+      }
+    }
+
+    // Clear local storage after syncing
+    localStorage.removeItem("cartItems");
+  };
+
+  if (isLoggedIn) {
+    syncLocalCart();
+  }
+}, [isLoggedIn]); 
   return (
     <div className="min-h-screen bg-white">
 
