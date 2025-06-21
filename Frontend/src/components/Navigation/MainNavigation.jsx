@@ -76,7 +76,7 @@ const MainNavigation = () => {
             <ul className="flex items-center justify-between list-none">
                 <li className='cursor-pointer w-40'>
                     <Link to="/">
-                        <svg width="250" height="100%" viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg">
+                        <svg width="200" height="100%" viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg">
                             <style>{`
                                 .logo-text { font-family: 'Fantasy', sans-serif; font-size: 100px; fill: green; font-weight: bold; }
                                 .tagline { font-family: 'Arial', sans-serif; font-size: 30px; fill: black; }
