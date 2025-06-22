@@ -68,7 +68,7 @@ const MainNavigation = () => {
     const handleInputChange = (e) => {
         setSearchTerm(e.target.value);
         setShowSuggestions(true);  
-        fetchSuggestions(searchTerm);
+        fetchSuggestions(e.target.value);
     };
 
     return (
@@ -76,12 +76,12 @@ const MainNavigation = () => {
             <ul className="flex items-center justify-between list-none">
                 <li className='cursor-pointer w-40'>
                     <Link to="/">
-                        <svg width="200" height="100%" viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg">
+                        <svg width="250" height="100%" viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg">
                             <style>{`
                                 .logo-text { font-family: 'Fantasy', sans-serif; font-size: 100px; fill: green; font-weight: bold; }
                                 .tagline { font-family: 'Arial', sans-serif; font-size: 30px; fill: black; }
                             `}</style>
-                            <text x="50" y="150" className="logo-text">Cartshop</text>
+                            <text x="10" y="150" className="logo-text">Cartshop</text>
                             <text x="150" y="200" className="tagline">Shop Smart, Save Big!</text>
                         </svg>
                     </Link>
