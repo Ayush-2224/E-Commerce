@@ -254,6 +254,36 @@ const getOrders = async (req, res, next) => {
 
 };
 
+const getSellerOrders = async (req, res, next) => {
+  const sellerId = req.sellerData._id;
+  try {
+    // Find all products by this seller
+    const sellerProducts = await Product.find({ seller: sellerId }).select('_id');
+    const productIds = sellerProducts.map(p => p._id);
+    if (productIds.length === 0) {
+      return res.status(200).json({ orders: [] });
+    }
+    // Find all orders for these products
+    const orders = await Order.find({ productId: { $in: productIds } })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: 'productId',
+        select: 'title brand imageUrl',
+      });
+    // Only include orders with a valid product
+    const filteredOrders = orders.filter(order => Array.isArray(order.productId) && order.productId.length > 0 && order.productId[0]);
+    // Map to only include the first product in productId array and createdAt
+    const result = filteredOrders.map(order => ({
+      _id: order._id,
+      product: order.productId[0],
+      createdAt: order.createdAt,
+    }));
+    res.status(200).json({ orders: result });
+  } catch (error) {
+    console.error('Error fetching seller orders:', error);
+    return next(new HttpError('Failed to get seller orders', 500));
+  }
+};
 
 const refund = async (transactionId) => {
   try {
@@ -332,5 +362,5 @@ const cancelOrder = async (req, res, next) => {
   }
 };
 
-export { createOrderbyProductId, verifyAndConfirm, createOrderbyCartId, getOrders, cancelOrder };
+export { createOrderbyProductId, verifyAndConfirm, createOrderbyCartId, getOrders, getSellerOrders, cancelOrder };
 

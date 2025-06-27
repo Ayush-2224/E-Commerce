@@ -3,7 +3,7 @@ import { axiosInstance } from '../lib/axios';
 import { useUserAuthStore } from '../store/userAuth.store';
 import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../components/UIElements/LoadingSpinner';
-import { Search, ShoppingCart, Truck, Shield, RefreshCw, Star } from 'lucide-react';
+import { Search, ShoppingCart, Truck, Shield, RefreshCw, Star, Store, User } from 'lucide-react';
 
 export default function HomePage() {
   const { authUser } = useUserAuthStore();
@@ -134,7 +134,9 @@ export default function HomePage() {
               : "Your one-stop destination for quality products. Sign in for personalized recommendations."
             }
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
             <button 
               onClick={() => navigate('/search')}
               className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
@@ -145,12 +147,66 @@ export default function HomePage() {
             {!isLoggedIn && (
               <button 
                 onClick={() => navigate('/user/login')}
-                className="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors"
+                className="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors flex items-center justify-center gap-2"
               >
+                <User className="w-5 h-5" />
                 Sign In
               </button>
             )}
           </div>
+
+          {/* Seller Section */}
+         {!isLoggedIn && <div className="bg-white bg-opacity-10 rounded-lg p-6 backdrop-blur-sm">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="text-left">
+                <h3 className="text-2xl font-bold mb-2 flex items-center gap-2">
+                  <Store className="w-6 h-6" />
+                  Are you a Seller?
+                </h3>
+                <p className="text-blue-100 mb-4">
+                  Join thousands of sellers and start selling your products nationwide. 
+                  Get access to powerful tools, analytics, and a growing customer base.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button 
+                    onClick={() => navigate('/seller/login')}
+                    className="bg-orange-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Store className="w-5 h-5" />
+                    Seller Login
+                  </button>
+                  <button 
+                    onClick={() => navigate('/seller/signup')}
+                    className="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors"
+                  >
+                    Become a Seller
+                  </button>
+                </div>
+              </div>
+              <div className="hidden md:block">
+                <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold">10K+</div>
+                      <div className="text-blue-100">Active Sellers</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold">50K+</div>
+                      <div className="text-blue-100">Products Sold</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold">95%</div>
+                      <div className="text-blue-100">Satisfaction</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold">24/7</div>
+                      <div className="text-blue-100">Support</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>  }
         </div>
       </div>
 

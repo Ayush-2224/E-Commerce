@@ -3,10 +3,13 @@ import { axiosInstance } from '../lib/axios.js';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../components/UIElements/LoadingSpinner.jsx';
+import SellerNavigation from '../components/Navigation/SellerNavigation';
+
 function SellerStore() {
     const [products, setProducts] = useState([]);
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
+    
     useEffect(() => {
         getProducts();
     }, []);
@@ -34,30 +37,34 @@ function SellerStore() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header with Add Product Button */}
-            {loading && <LoadingSpinner asOverlay />}
-            <div className="bg-white shadow-sm border-b">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center py-6">
-                        <h1 className="text-3xl font-bold text-gray-900">My Products</h1>
-                        <button
-                            onClick={() => navigate('/seller/add-product')}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition-colors duration-200 shadow-sm"
-                        >
-                            + Add Product
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            {/* Products Grid */}
+            <SellerNavigation />
+            
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {loading && <LoadingSpinner asOverlay />}
+                
+                {/* Header */}
+                <div className="flex justify-between items-center mb-8">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900">My Products</h1>
+                        <p className="text-gray-600 mt-2">Manage your product catalog</p>
+                    </div>
+                    <button
+                        onClick={() => navigate('/seller/add-product')}
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition-colors duration-200 shadow-sm flex items-center gap-2"
+                    >
+                        <span>+</span>
+                        Add Product
+                    </button>
+                </div>
+
+                {/* Products Grid */}
                 {products.length === 0 ? (
-                    <div className="text-center py-12">
-                        <div className="text-gray-500 text-lg">No products found</div>
+                    <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
+                        <div className="text-gray-500 text-lg mb-4">No products found</div>
+                        <p className="text-gray-600 mb-6">Start by adding your first product to your store</p>
                         <button
                             onClick={() => navigate('/seller/add-product')}
-                            className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg"
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200"
                         >
                             Add Your First Product
                         </button>
@@ -69,9 +76,12 @@ function SellerStore() {
                                 {/* Product Image */}
                                 <div className="p-4">
                                     <img
-                                        src={product.imageUrl?.[0] || '/placeholder.png'}
+                                        src={product.imageUrl?.[0] || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"%3E%3Crect width="200" height="200" fill="%23f3f4f6"/%3E%3Ctext x="100" y="100" font-family="Arial" font-size="12" fill="%236b7280" text-anchor="middle" dy=".3em"%3ENo Image%3C/text%3E%3C/svg%3E'}
                                         alt={product.title}
                                         className="w-full h-48 object-cover rounded-lg"
+                                        onError={(e) => {
+                                            e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"%3E%3Crect width="200" height="200" fill="%23f3f4f6"/%3E%3Ctext x="100" y="100" font-family="Arial" font-size="12" fill="%236b7280" text-anchor="middle" dy=".3em"%3ENo Image%3C/text%3E%3C/svg%3E';
+                                        }}
                                     />
                                 </div>
 
@@ -128,19 +138,19 @@ function SellerStore() {
                                         </span>
                                     </div>
 
-                                    {/* Edit Button */}
+                                    {/* Action Buttons */}
                                     <div className="flex gap-2">
                                         <button
                                             onClick={() => navigate(`/seller/edit-product/${product._id}`)}
                                             className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors duration-200"
                                         >
-                                            Edit Product
+                                            Edit
                                         </button>
                                         <button
                                             onClick={() => navigate(`/product/${product._id}`)}
                                             className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
                                         >
-                                            View Details
+                                            View
                                         </button>
                                     </div>
                                 </div>

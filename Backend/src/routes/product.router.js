@@ -18,6 +18,7 @@ router.post('/editProduct/:id',verifySellerAuthentication,fileUpload.fields([
     {name: "descriptionImages", maxCount:10}
 ]),editProduct)
 router.get('/getProductsBySeller',verifySellerAuthentication,getProductsBySeller)
+router.get('/seller-products',verifySellerAuthentication,getProductsBySeller)
 router.get('/search',searchProducts)
 //router.post('/retrainModel', retrainModel);
 router.get("/recommend/:id", Recommendation);
