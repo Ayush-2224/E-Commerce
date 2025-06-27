@@ -3,6 +3,8 @@ import cron from "node-cron"
 import razorpay from "../lib/razorpay.js";
 import Payment from "../models/Payment.model.js";
 import { retrainModel } from "../controllers/retrainController.js";
+
+// Daily payout processing
 cron.schedule("0 0 * * *", async () => {
     try {
         const now = new Date();
@@ -14,7 +16,6 @@ cron.schedule("0 0 * * *", async () => {
         });
 
         for (const order of ordersToPay) {
-
             await payseller(order);
             console.log(`Paid seller for order ${order._id}`);
         }
@@ -50,9 +51,13 @@ async function payseller(order) {
     }
 }
 
-
-// Every Monday at midnight
-cron.schedule("0 0 * * 1", async () => {
-  console.log("⏰ Starting weekly retraining...");
-  await retrainModel({ params: {} }, { status: () => ({ json: console.log }) });
+// Monthly model retraining for maintenance (first day of month at midnight)
+cron.schedule("0 0 1 * *", async () => {
+  console.log("⏰ Starting monthly model retraining for maintenance...");
+  try {
+    await retrainModel({ params: {} }, { status: () => ({ json: console.log }) });
+    console.log("✅ Monthly model retraining completed successfully");
+  } catch (error) {
+    console.error("❌ Monthly model retraining failed:", error);
+  }
 });

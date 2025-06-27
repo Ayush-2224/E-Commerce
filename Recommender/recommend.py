@@ -16,7 +16,7 @@ def load_resources():
 def recommend_by_id(product_id):
     try:
         tfidf_matrix, product_ids = load_resources()
-        df_meta = pd.read_csv(os.path.join(MODEL_DIR, "product_data.csv"))  # for fallback
+        df_meta = pd.read_csv(os.path.join(MODEL_DIR, "product_ids.csv"))  # for fallback
 
         try:
             index = product_ids[product_ids == product_id].index[0]
@@ -54,16 +54,36 @@ def recommend_by_id(product_id):
         print("Error during recommendation:", e)
         return jsonify({"error": "Internal server error"}), 500
 
+@app.route("/add-product", methods=["POST"])
+def add_product_incrementally():
+    """Add a single product to the model without full retraining"""
+    try:
+        from retrain_model import add_single_product
+        data = request.get_json()
+        product = data["product"]
+        
+        success = add_single_product(product)
+        
+        if success:
+            return jsonify({"message": "Product added successfully"})
+        else:
+            return jsonify({"message": "Product already exists or failed to add"}), 400
+            
+    except Exception as e:
+        print("Add product error:", e)
+        return jsonify({"error": "Failed to add product"}), 500
+
 @app.route("/retrain", methods=["POST"])
 def retrain_from_node():
+    """Full model retraining for periodic maintenance"""
     try:
         from retrain_model import retrain_model
         data = request.get_json()
         products = data["products"]
-        print("Received products for retraining:", products[0])
+        print("Received products for retraining:", len(products))
         retrain_model(products)
 
-        return jsonify({"message": "Retrained successfully."})
+        return jsonify({"message": "Model retrained successfully"})
     except Exception as e:
         print("Retrain error:", e)
         return jsonify({"error": "Retraining failed"}), 500
