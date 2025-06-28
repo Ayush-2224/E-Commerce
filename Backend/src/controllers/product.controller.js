@@ -469,20 +469,12 @@ const Recommendation = async (req, res) => {
     const { id } = req.params;
 
     // 1. Call Flask API
-    const response = await axios.get(`http://localhost:5000/recommend/${id}`);
+    const response = await axios.get(`http://localhost:5000/recommend/product/${id}`);
     const { recommended } = response.data;
 
     // 2. Fetch product details from MongoDB
-   const products = await Product.find({ _id: { $in: recommended } })
-  .select("_id imageUrl");
-
-const formatted = products.map(p => ({
-  _id: p._id,
-  image: p.imageUrl?.[0] || null
-}));
-
-
-    return res.status(200).json({ recommended: formatted });
+   const products = await Product.find({ _id: { $in: recommended } });
+   return res.status(200).json({ recommended: products});
 
   } catch (error) {
     console.error("Recommendation error:", error.message);

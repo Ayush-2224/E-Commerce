@@ -50,7 +50,7 @@ function App() {
     <Routes>
     <Route element={<NavPages/>}>
       <Route path='/cart' element={<Cart/>} />
-      <Route path="product/:productId" element={<Product />} />
+      <Route path="/product/:productId" element={<Product />} />
       <Route path="/search" element={<Search />} />
       <Route path='/user/orders' element={<Order/>} />
       <Route path="/buy/:productId" element={<BuyNowPage/>} />

@@ -8,11 +8,13 @@ import ProductImageGallery from '../components/UIElements/ProductImageGallery';
 // import RatingBreakdown from '../components/UIElements/RatingBreakdown';
 import DeliveryInfo from '../components/UIElements/DelieryInfo';
 import HorizontalLine from '../components/UIElements/HorizontalLine';
+import Recommend from '../components/UIElements/Recommend';
 import { useUserAuthStore } from '../store/userAuth.store';
 
 const Product = () => {
     const { productId } = useParams();
     const { authUser } = useUserAuthStore();
+    const [recommendations, setRecommendations] = useState([]);
     const isLoggedIn = !!authUser;
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -21,9 +23,7 @@ const Product = () => {
     const navigate = useNavigate();
     const [reviews, setReviews] = useState([]);
     const [userHistory, setUserHistory] = useState([]);
-    const [recommendations, setRecommendations] = useState([]);
     const [loadingHistory, setLoadingHistory] = useState(false);
-    const [loadingRecommendations, setLoadingRecommendations] = useState(false);
     const sortBy = "rating";  // or "createdAt"
     const sortOrder = -1;     // -1 for descending, 1 for ascending
 
@@ -50,7 +50,7 @@ const Product = () => {
 
     const fetchUserHistory = async () => {
         if (!isLoggedIn) return;
-        
+
         setLoadingHistory(true);
         try {
             const response = await axiosInstance.get('/user/user-history');
@@ -59,18 +59,6 @@ const Product = () => {
             console.error('Error fetching user history:', error);
         } finally {
             setLoadingHistory(false);
-        }
-    };
-
-    const fetchRecommendations = async () => {
-        setLoadingRecommendations(true);
-        try {
-            const response = await axiosInstance.get(`/product/recommend/${productId}`);
-            setRecommendations(response.data.recommended || []);
-        } catch (error) {
-            console.error('Error fetching recommendations:', error);
-        } finally {
-            setLoadingRecommendations(false);
         }
     };
 
@@ -94,7 +82,6 @@ const Product = () => {
 
     useEffect(() => {
         fetchUserHistory();
-        fetchRecommendations();
     }, [productId, isLoggedIn]);
 
     useEffect(() => {
@@ -127,6 +114,7 @@ const Product = () => {
     useEffect(() => {
         const fetchProduct = async () => {
             setLoading(true)
+            setProduct(null);
             setError(null);
             try {
                 const response = await axiosInstance.get(`product/getProduct/${productId}`);
@@ -141,9 +129,23 @@ const Product = () => {
             }
         }
 
+        const fetchRecommendations = async () => {
+            setLoading(true);
+            try {
+                const response = await axiosInstance.get(`/product/recommend/${productId}`);
+                setRecommendations(response.data.recommended || []);
+            } catch (error) {
+                console.error('Failed to fetch recommendations:', error);
+                setRecommendations([]);
+            } finally {
+                setLoading(false);
+            }
+        };
 
+        fetchRecommendations();
         fetchProduct();
     }, [productId])
+
 
     if (loading || !product) {
         return <LoadingSpinner asOverlay />;
@@ -358,42 +360,11 @@ const Product = () => {
             )}
 
             {/* Product Recommendations Section - For all users */}
-            <div className="bg-white py-8">
+            <div className="bg-white">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">You Might Also Like</h2>
-                    {loadingRecommendations ? (
-                        <LoadingSpinner centered />
-                    ) : recommendations.length > 0 ? (
-                        <div className="grid gap-4" style={{
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                            maxWidth: '100%'
-                        }}>
-                            {recommendations.map((item) => (
-                                <div
-                                    key={item._id}
-                                    onClick={() => handleProductClick(item._id)}
-                                    className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow border border-gray-100"
-                                >
-                                    <div className="aspect-square">
-                                        <img
-                                            src={getImageUrl(item) || placeholderImage}
-                                            alt="Product"
-                                            className="w-full h-full object-cover"
-                                            onError={(e) => {
-                                                if (e.target.src !== placeholderImage) {
-                                                    e.target.src = placeholderImage;
-                                                }
-                                            }}
-                                        />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center py-8">
-                            <p className="text-gray-500">No recommendations available at the moment.</p>
-                        </div>
-                    )}
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Similar Products</h2>
+
+                    <Recommend recommendations={recommendations} />
                 </div>
             </div>
         </div>
