@@ -206,25 +206,37 @@ const checkAuth=async(req,res,next)=>{
 }
 const userHistory = async (req, res, next) => {
   try {
-    const userId=req.userData._id;
+    const userId = req.userData._id;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = parseInt(req.query.offset) || 0;
+
+    // Fetch total count of history items
+    const total = await History.countDocuments({ userId });
+
+    // Fetch paginated history, and populate product details
     const history = await History.find({ userId })
       .sort({ createdAt: -1 })
-      .populate("productId", "title price imageUrl");
+      .skip(offset)
+      .limit(limit)
+      .populate("productId", "title price imageUrl rating mrp");
 
+    // Format product info
     const formatted = history.map(entry => {
-  const product = entry.productId;
-  return {
-    _id: product._id,
-    image: product.imageUrl?.[0] || null
-  };
-});
+      return entry.productId
+    });
 
-    return res.status(200).json({ history: formatted });
+    return res.status(200).json({
+      history: formatted,
+      total,
+      limit,
+      offset
+    });
 
   } catch (error) {
     console.error("userHistory error:", error);
     return next(new HttpError("Internal Server Error", 500));
   }
 };
+
 
 export {signup,login,logout,checkAuth,googleAuth,googleCallback,forgotPassword,resetPassword,editProfile,userHistory}

@@ -322,42 +322,7 @@ const Product = () => {
             </div>
 
             {/* User History Section - Only for logged in users */}
-            {isLoggedIn && userHistory.length > 0 && (
-                <div className="bg-gray-50 py-8">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Recently Viewed</h2>
-                        {loadingHistory ? (
-                            <LoadingSpinner centered />
-                        ) : (
-                            <div className="grid gap-4" style={{
-                                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                                maxWidth: '100%'
-                            }}>
-                                {userHistory.map((item) => (
-                                    <div
-                                        key={item._id}
-                                        onClick={() => handleProductClick(item._id)}
-                                        className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow border border-gray-100"
-                                    >
-                                        <div className="aspect-square">
-                                            <img
-                                                src={getImageUrl(item) || placeholderImage}
-                                                alt="Product"
-                                                className="w-full h-full object-cover"
-                                                onError={(e) => {
-                                                    if (e.target.src !== placeholderImage) {
-                                                        e.target.src = placeholderImage;
-                                                    }
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
+           
 
             {/* Product Recommendations Section - For all users */}
             <div className="bg-white">
@@ -367,6 +332,14 @@ const Product = () => {
                     <Recommend recommendations={recommendations} />
                 </div>
             </div>
+             {isLoggedIn && userHistory.length > 0 && (
+                <div className="bg-gray-50 py-8">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Recently Viewed</h2>
+                        <Recommend recommendations={userHistory} />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

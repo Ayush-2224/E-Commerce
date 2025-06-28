@@ -1,5 +1,5 @@
 import express from 'express';
-import { addProduct, getProductById, getProductsByCategory, getProductsBySeller ,editProduct,searchProducts,retrainModel,Recommendation, getTrendingProducts, getProductBreakdownStats, getProductOrders} from '../controllers/product.controller.js';
+import { RecommendationbyUserHistory,addProduct, getProductById, getProductsByCategory, getProductsBySeller ,editProduct,searchProducts,retrainModel,Recommendation, getTrendingProducts, getProductBreakdownStats, getProductOrders} from '../controllers/product.controller.js';
 import verifySellerAuthentication from '../middleware/sellerAuth.middleware.js';
 import fileUpload from '../middleware/file-upload.js';
 import verifyUserAuthentication from '../middleware/userAuth.middleware.js';
@@ -22,6 +22,7 @@ router.get('/seller-products',verifySellerAuthentication,getProductsBySeller)
 router.get('/search',searchProducts)
 //router.post('/retrainModel', retrainModel);
 router.get("/recommend/:id", Recommendation);
+router.get('/recommendUser', verifyUserAuthentication, RecommendationbyUserHistory);
 router.get("/trending", getTrendingProducts);
 router.get('/:productId/breakdown', verifySellerAuthentication, getProductBreakdownStats);
 router.get('/:productId/orders', verifySellerAuthentication, getProductOrders);

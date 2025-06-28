@@ -473,13 +473,33 @@ const Recommendation = async (req, res) => {
     const { recommended } = response.data;
 
     // 2. Fetch product details from MongoDB
-   const products = await Product.find({ _id: { $in: recommended } });
+   const products = await Product.find({ _id: { $in: recommended } })
+      .select("_id title price mrp rating imageUrl");
+   ;
    return res.status(200).json({ recommended: products});
 
   } catch (error) {
     console.error("Recommendation error:", error.message);
     return res.status(500).json({ error: "Failed to get recommendations" });
   }
+};
+const RecommendationbyUserHistory = async (req, res) => {
+    console.log(1);
+    const userId  = req.userData._id;
+    try{
+      const response = await axios.get(`http://localhost:5000/recommend/user/${userId}`);
+      const  recommended  = response.data.recommended;
+      console.log(recommended);
+      
+    // 2. Fetch product details from MongoDB
+   const products = await Product.find({ _id: { $in: recommended } })
+      .select("_id title price mrp rating imageUrl");
+   ;
+   return res.status(200).json({ recommended: products});
+  } catch (error) {
+    console.error("Recommendation error:", error.message);
+    return res.status(500).json({ error: "Failed to get recommendations" });
+    }    
 };
 
 const getTrendingProducts = async (req, res, next) => {
@@ -488,18 +508,10 @@ const getTrendingProducts = async (req, res, next) => {
     const products = await Product.find({ quantity: { $gt: 0 } })
       .sort({ createdAt: -1 }) // Most recent products
       .limit(6) // Get 6 products
-      .select("_id title price mrp imageUrl category");
+      .select("_id title price mrp rating imageUrl");
 
-    const formatted = products.map(product => ({
-      _id: product._id,
-      title: product.title,
-      price: product.price,
-      mrp: product.mrp,
-      category: product.category,
-      image: product.imageUrl?.[0] || null
-    }));
 
-    return res.status(200).json({ trending: formatted });
+    return res.status(200).json({ trending: products });
   } catch (error) {
     console.error("getTrendingProducts error:", error);
     return next(new HttpError("Internal Server Error", 500));
@@ -655,4 +667,4 @@ const getProductOrders = async (req, res, next) => {
 
 
 
-export { addProduct, getProductById, getProductsByCategory, editProduct, getProductsBySeller, searchProducts, retrainModel, Recommendation, getTrendingProducts, getProductBreakdownStats, getProductOrders };
+export { addProduct, getProductById, getProductsByCategory, editProduct, getProductsBySeller, searchProducts, retrainModel, Recommendation, getTrendingProducts, getProductBreakdownStats, getProductOrders, RecommendationbyUserHistory };

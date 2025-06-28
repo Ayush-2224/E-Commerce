@@ -4,6 +4,7 @@ import { useUserAuthStore } from '../store/userAuth.store';
 import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../components/UIElements/LoadingSpinner';
 import { Search, ShoppingCart, Truck, Shield, RefreshCw, Star, Store, User } from 'lucide-react';
+import Recommend from '../components/UIElements/Recommend';
 
 export default function HomePage() {
   const { authUser } = useUserAuthStore();
@@ -53,30 +54,16 @@ export default function HomePage() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        if (isLoggedIn) {
           // Fetch user history
           const historyResponse = await axiosInstance.get('/user/user-history');
           console.log('User history:', historyResponse.data);
           setUserHistory(historyResponse.data.history || []);
-
-          // Fetch recommendations based on first item in history
-          if (historyResponse.data.history && historyResponse.data.history.length > 0) {
-            const firstProductId = historyResponse.data.history[0]._id;
-            try {
-              const recResponse = await axiosInstance.get(`/product/recommend/${firstProductId}`);
-              console.log('Recommendations:', recResponse.data);
-              setRecommendations(recResponse.data.recommended || []);
-            } catch (error) {
-              console.error('Failed to fetch recommendations:', error);
-              setRecommendations([]);
-            }
-          }
-        } else {
-          // Fetch trending products for non-logged in users
-          const trendingResponse = await axiosInstance.get('/product/trending');
-          console.log('Trending products:', trendingResponse.data);
-          setTrendingProducts(trendingResponse.data.trending || []);
-        }
+          const recResponse = await axiosInstance.get(`/product/recommendUser`);
+          console.log('Recommendations:', recResponse.data);
+          setRecommendations(recResponse.data.recommended || []);
+        const trendingResponse = await axiosInstance.get('/product/trending');
+        console.log('Trending products:', trendingResponse.data);
+        setTrendingProducts(trendingResponse.data.trending || []);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -85,7 +72,7 @@ export default function HomePage() {
     };
 
     fetchData();
-  }, [isLoggedIn]);
+  }, []);
 
   const handleProductClick = (productId) => {
     navigate(`/product/${productId}`);
@@ -269,74 +256,19 @@ export default function HomePage() {
         </div>
 
         {/* Main Content */}
-        {isLoggedIn ? (
-          // Logged in user - show history and recommendations
           <div className="space-y-8">
             {/* User History Section */}
-            {userHistory.length > 0 && (
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Recently Viewed</h2>
-                <div className="grid gap-4" style={{
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                    maxWidth: '100%'
-                }}>
-                  {userHistory.map((item) => (
-                    <div
-                      key={item._id}
-                      onClick={() => handleProductClick(item._id)}
-                      className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow border border-gray-100"
-                    >
-                      <div className="aspect-square">
-                        <img
-                          src={getImageUrl(item) || placeholderImage}
-                          alt="Product"
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            if (e.target.src !== placeholderImage) {
-                              e.target.src = placeholderImage;
-                            }
-                          }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            
 
             {/* Recommendations Section */}
-            {recommendations.length > 0 && (
+            {recommendations  && (
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Recommended for You</h2>
-                <div className="grid gap-4" style={{
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                    maxWidth: '100%'
-                }}>
-                  {recommendations.map((item) => (
-                    <div
-                      key={item._id}
-                      onClick={() => handleProductClick(item._id)}
-                      className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow border border-gray-100"
-                    >
-                      <div className="aspect-square">
-                        <img
-                          src={getImageUrl(item) || placeholderImage}
-                          alt="Product"
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            if (e.target.src !== placeholderImage) {
-                              e.target.src = placeholderImage;
-                            }
-                          }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                  <Recommend recommendations={recommendations} />
               </div>
             )}
 
-            {userHistory.length === 0 && recommendations.length === 0 && (
+            {recommendations.length === 0 && (
               <div className="text-center py-12 bg-white rounded-lg shadow-sm">
                 <h3 className="text-xl font-semibold text-gray-600 mb-4">Start Your Shopping Journey</h3>
                 <p className="text-gray-500 mb-6">Browse our categories and discover amazing products.</p>
@@ -349,50 +281,10 @@ export default function HomePage() {
               </div>
             )}
           </div>
-        ) : (
-          // Non-logged in user - show trending products
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Trending Products</h2>
             {trendingProducts.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                {trendingProducts.map((product) => (
-                  <div
-                    key={product._id}
-                    onClick={() => handleProductClick(product._id)}
-                    className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-                  >
-                    <div className="aspect-square">
-                      <img
-                        src={getImageUrl(product) || placeholderImage}
-                        alt={product.title}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          if (e.target.src !== placeholderImage) {
-                            e.target.src = placeholderImage;
-                          }
-                        }}
-                      />
-                    </div>
-                    <div className="p-3">
-                      <h3 className="font-medium text-gray-900 mb-1 text-sm line-clamp-2">{product.title}</h3>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-1">
-                          <span className="text-base font-bold text-gray-900">₹{product.price}</span>
-                          {product.mrp > product.price && (
-                            <>
-                              <span className="text-xs text-gray-500 line-through">₹{product.mrp}</span>
-                              <span className="text-xs text-green-600 font-medium">
-                                {calculateDiscount(product.price, product.mrp)}% off
-                              </span>
-                            </>
-                          )}
-                        </div>
-                        <span className="text-xs text-gray-500 capitalize">{product.category}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <Recommend recommendations={trendingProducts}/>
             ) : (
               <div className="text-center py-12 bg-white rounded-lg shadow-sm">
                 <h3 className="text-xl font-semibold text-gray-600 mb-4">Discover Amazing Products</h3>
@@ -401,12 +293,17 @@ export default function HomePage() {
                   onClick={() => navigate('/search')}
                   className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
                 >
-                  Start Shopping
                 </button>
               </div>
             )}
+
+            {userHistory.length > 0 && (
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Recently Viewed</h2>
+                        <Recommend recommendations={userHistory} />
+                </div>
+            )}
           </div>
-        )}
       </div>
     </div>
   );
