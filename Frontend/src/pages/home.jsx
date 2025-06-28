@@ -284,7 +284,9 @@ export default function HomePage() {
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Trending Products</h2>
             {trendingProducts.length > 0 ? (
+              <div>
               <Recommend recommendations={trendingProducts}/>
+              </div>
             ) : (
               <div className="text-center py-12 bg-white rounded-lg shadow-sm">
                 <h3 className="text-xl font-semibold text-gray-600 mb-4">Discover Amazing Products</h3>
