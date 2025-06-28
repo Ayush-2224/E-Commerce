@@ -4,6 +4,8 @@ import cloudinary, { uploadToCloudinary } from '../lib/cloudinary.js'
 import History from '../models/history.model.js'
 import axios from 'axios'
 import jwt from 'jsonwebtoken'
+import Order from '../models/order.model.js'
+import mongoose from 'mongoose'
 const addProduct = async (req, res, next) => {
   try {
     //console.log("Adding product with data:", req.body);
@@ -512,4 +514,153 @@ const getTrendingProducts = async (req, res, next) => {
   }
 };
 
-export { addProduct, getProductById, getProductsByCategory, editProduct, getProductsBySeller, searchProducts, retrainModel, Recommendation, getTrendingProducts };
+const getProductBreakdownStats = async (req, res, next) => {
+  console.log(1);
+  const { productId } = req.params;
+  const sellerId = req.sellerData._id;
+  
+  try {
+    
+    console.log('Getting breakdown for productId:', productId, 'sellerId:', sellerId);
+
+    const product = await Product.findOne({ _id: productId, seller: sellerId }).lean();
+    if (!product) {
+      console.log('Product not found or not authorized');
+      return res.status(404).json({ message: "Product not found or not authorized" });
+    }
+
+    console.log('Product found:', product.title);
+
+    console.log('Product found:', product.title);
+
+    const [stats] = await Order.aggregate([
+      { $match: { productId: { $in: [new mongoose.Types.ObjectId(productId)] } } },
+      {
+        $group: {
+          _id: null,
+          totalOrders: { $sum: 1 },
+          totalSales: {
+            $sum: {
+              $cond: [
+                { $or: [{ $eq: ['$paymentStatus', 'Paid'] }, { $eq: ['$orderStatus', 'Order Delivered'] }] },
+                1,
+                0
+              ]
+            }
+          },
+          totalCancellations: {
+            $sum: {
+              $cond: [{ $eq: ['$orderStatus', 'Order Cancelled'] }, 1, 0]
+            }
+          },
+          totalMoneyReceived: {
+            $sum: {
+              $cond: [
+                { $or: [{ $eq: ['$paymentStatus', 'Paid'] }, { $eq: ['$orderStatus', 'Order Delivered'] }] },
+                '$price',
+                0
+              ]
+            }
+          }
+        }
+      }
+    ]);
+
+    console.log('Aggregation result:', stats);
+
+    const {
+      totalOrders = 0,
+      totalSales = 0,
+      totalCancellations = 0,
+      totalMoneyReceived = 0
+    } = stats || {};
+
+    const successRate = totalOrders ? ((totalSales / totalOrders) * 100).toFixed(1) : '0.0';
+    const averageOrderValue = totalSales ? (totalMoneyReceived / totalSales).toFixed(2) : '0.00';
+
+    return res.status(200).json({
+      message: "Product breakdown retrieved successfully",
+      breakdown: {
+        productInfo: {
+          id: product._id,
+          title: product.title,
+          brand: product.brand,
+          price: product.price,
+          mrp: product.mrp,
+          image: product.imageUrl?.[0] || null,
+          currentStock: product.quantity,
+          category: product.category,
+          rating: product.rating
+        },
+        stats: {
+          totalOrders,
+          totalSales,
+          totalCancellations,
+          totalMoneyReceived,
+          successRate: parseFloat(successRate),
+          averageOrderValue
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error("getProductBreakdownStats error:", error);
+    return next(new HttpError("Internal Server Error", 500));
+  }
+};
+
+const getProductOrders = async (req, res, next) => {
+  try {
+    const { productId } = req.params;
+    const sellerId = req.sellerData._id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    console.log('Getting orders for productId:', productId, 'page:', page, 'limit:', limit);
+
+    // Confirm ownership
+    const product = await Product.findOne({ _id: productId, seller: sellerId }).lean();
+    if (!product) {
+      console.log('Product not found or not authorized for orders');
+      return res.status(404).json({ message: "Product not found or not authorized" });
+    }
+
+    const totalOrders = await Order.countDocuments({ productId});
+
+    const orders = await Order.find({ productId })
+      .populate('userId', 'username email')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const orderDetails = orders.map(order => ({
+      orderId: order._id,
+      customerName: order.userId?.username || 'N/A',
+      customerEmail: order.userId?.email || 'N/A',
+      price: order.price,
+      paymentStatus: order.paymentStatus,
+      orderStatus: order.orderStatus,
+      orderDate: order.createdAt,
+      refundLimit: order.refundLimit
+    }));
+
+    return res.status(200).json({
+      message: "Orders fetched successfully",
+      orders: orderDetails,
+      pagination: {
+        currentPage: page,
+        pageSize: limit,
+      }
+    });
+
+  } catch (error) {
+    console.error("getProductOrders error:", error);
+    return next(new HttpError("Internal Server Error", 500));
+  }
+};
+
+
+
+export { addProduct, getProductById, getProductsByCategory, editProduct, getProductsBySeller, searchProducts, retrainModel, Recommendation, getTrendingProducts, getProductBreakdownStats, getProductOrders };
