@@ -42,7 +42,7 @@ function SellerLogin() {
       try {
         await login(formData);
         toast.success("Login successful!");
-        navigate("/seller/add-product");
+        navigate("/seller/dashboard");
       } catch (error) {
         console.error("Login error:", error);
         toast.error(error.message || "Login failed. Please try again.");

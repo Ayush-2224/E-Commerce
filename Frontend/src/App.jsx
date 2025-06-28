@@ -25,6 +25,8 @@ import SellerStore from './pages/sellerStore';
 import UserReviews from './pages/UserReviews';
 import EditProduct from './pages/EditProduct';
 import SellerProfile from './pages/sellerProfile';
+import Dashboard from './pages/Dashboard';
+import SellerOrders from './pages/ProductDashboard';
 import { useUserAuthStore } from './store/userAuth.store';
 import { useEffect } from 'react';
 // import EditProduct from './pages/EditProduct';
@@ -50,7 +52,7 @@ function App() {
       <Route path='/cart' element={<Cart/>} />
       <Route path="product/:productId" element={<Product />} />
       <Route path="/search" element={<Search />} />
-      <Route path='/order' element={<Order/>} />
+      <Route path='/user/orders' element={<Order/>} />
       <Route path="/buy/:productId" element={<BuyNowPage/>} />
       <Route path="/reviews/:productId" element={<ProductReviews/>} />
       <Route path="/product/:productId/review" element={<Review/>} />
@@ -63,6 +65,8 @@ function App() {
 
         {/* Auth pages without Nav + Footer */}
         <Route element={<AuthPages />}>
+          <Route path="seller/dashboard" element={<Dashboard />} />
+          <Route path="seller/orders" element={<SellerOrders />} />
           <Route path="seller/add-product" element={<AddProduct />} />
           <Route path="seller/profile" element={<SellerProfile />} />
           <Route path="/user/login" element={<UserLogin />} />

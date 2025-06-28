@@ -6,8 +6,8 @@ import axios from 'axios'
 import jwt from 'jsonwebtoken'
 const addProduct = async (req, res, next) => {
   try {
-    console.log("Adding product with data:", req.body);
-    console.log("Files received:", req.files);
+    //console.log("Adding product with data:", req.body);
+    //console.log("Files received:", req.files);
 
     const {
       brand,
@@ -75,7 +75,6 @@ const addProduct = async (req, res, next) => {
       return next(new HttpError("Invalid description format", 400));
     }
 
-
     // Handle specifications - convert flat array to grouped format
     let parsedSpecifications = [];
     try {
@@ -97,10 +96,7 @@ const addProduct = async (req, res, next) => {
       console.error("Specifications parsing error:", error);
       return next(new HttpError("Invalid specifications format", 400));
     }
-  //  console.log("Parsed specifications:", parsedSpecifications);
-  //  console.log("Parsed description:", parsedDescription);
-  //  console.log("desc",description);
-  //  console.log("specs",specifications);
+
     const newProduct = new Product({
       brand,
       title,
@@ -114,12 +110,29 @@ const addProduct = async (req, res, next) => {
       quantity: Number(quantity)
     });
 
-  //  console.log("Product before save:", newProduct);
-
     const savedProduct = await newProduct.save();
 
     if (!savedProduct) {
       return res.status(500).json({ message: "Failed to create product" });
+    }
+
+    // Add product to recommendation model incrementally
+    try {
+      const productForModel = {
+        _id: savedProduct._id.toString(),
+        title: savedProduct.title,
+        brand: savedProduct.brand,
+        category: savedProduct.category,
+        description: savedProduct.description
+      };
+
+      await axios.post("http://localhost:5000/add-product", {
+        product: productForModel
+      });
+      console.log("Product added to recommendation model incrementally");
+    } catch (error) {
+      console.error("Failed to add product to recommendation model:", error.message);
+      // Don't fail the product creation if recommendation model update fails
     }
 
     return res.status(201).json({
@@ -356,11 +369,11 @@ const searchProducts = async (req, res, next) => {
   try {
     //
     // 1) Build a compound $search stage:
-    //    – A “phrase” clause (highest boost) for exact‐order matches
-    //    – A “text” clause on title (with moderate fuzziness + a boost)
-    //    – A “text” clause on category (with lighter fuzziness + smaller boost)
+    //    – A "phrase" clause (highest boost) for exact-order matches
+    //    – A "text" clause on title (with moderate fuzziness + a boost)
+    //    – A "text" clause on category (with lighter fuzziness + smaller boost)
     //
-    // 2) Extract the searchScore into a “score” field
+    // 2) Extract the searchScore into a "score" field
     // 3) Sort by score descending
     // 4) Skip/limit for pagination
     //
@@ -475,6 +488,28 @@ const formatted = products.map(p => ({
   }
 };
 
+const getTrendingProducts = async (req, res, next) => {
+  try {
+    // Get products with some basic filtering for trending (you can enhance this logic)
+    const products = await Product.find({ quantity: { $gt: 0 } })
+      .sort({ createdAt: -1 }) // Most recent products
+      .limit(6) // Get 6 products
+      .select("_id title price mrp imageUrl category");
 
+    const formatted = products.map(product => ({
+      _id: product._id,
+      title: product.title,
+      price: product.price,
+      mrp: product.mrp,
+      category: product.category,
+      image: product.imageUrl?.[0] || null
+    }));
 
-export { addProduct, getProductById, getProductsByCategory, editProduct, getProductsBySeller, searchProducts, retrainModel,Recommendation };
+    return res.status(200).json({ trending: formatted });
+  } catch (error) {
+    console.error("getTrendingProducts error:", error);
+    return next(new HttpError("Internal Server Error", 500));
+  }
+};
+
+export { addProduct, getProductById, getProductsByCategory, editProduct, getProductsBySeller, searchProducts, retrainModel, Recommendation, getTrendingProducts };

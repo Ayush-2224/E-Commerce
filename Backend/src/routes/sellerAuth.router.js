@@ -7,7 +7,7 @@ const router= Router();
 
 router.route("/signup").post(fileUpload.single("profilePic"), sellerSignup)
 router.route("/login").post(sellerLogin)
-router.route("/logout").get(sellerLogout)
+router.route("/logout").post(sellerLogout)
 router.route("/sellerInfo").get(verifySellerAuthentication,sellerCheckAuth)
 router.post('/edit-profile', verifySellerAuthentication, fileUpload.single("profilePic"), editProfile);
 export default router;
