@@ -8,16 +8,27 @@ import ProductImageGallery from '../components/UIElements/ProductImageGallery';
 // import RatingBreakdown from '../components/UIElements/RatingBreakdown';
 import DeliveryInfo from '../components/UIElements/DelieryInfo';
 import HorizontalLine from '../components/UIElements/HorizontalLine';
+import { useUserAuthStore } from '../store/userAuth.store';
+
 const Product = () => {
     const { productId } = useParams();
+    const { authUser } = useUserAuthStore();
+    const isLoggedIn = !!authUser;
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [ratings, setRatings] = useState({ 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 });
     const navigate = useNavigate();
     const [reviews, setReviews] = useState([]);
+    const [userHistory, setUserHistory] = useState([]);
+    const [recommendations, setRecommendations] = useState([]);
+    const [loadingHistory, setLoadingHistory] = useState(false);
+    const [loadingRecommendations, setLoadingRecommendations] = useState(false);
     const sortBy = "rating";  // or "createdAt"
     const sortOrder = -1;     // -1 for descending, 1 for ascending
+
+    // Simple SVG placeholder as data URI
+    const placeholderImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23f3f4f6'/%3E%3Ctext x='75' y='75' font-family='Arial' font-size='12' fill='%236b7280' text-anchor='middle' dy='.3em'%3ENo Image%3C/text%3E%3C/svg%3E";
 
     const fetchReviews = async () => {
         try {
@@ -37,9 +48,54 @@ const Product = () => {
         }
     };
 
+    const fetchUserHistory = async () => {
+        if (!isLoggedIn) return;
+        
+        setLoadingHistory(true);
+        try {
+            const response = await axiosInstance.get('/user/user-history');
+            setUserHistory(response.data.history || []);
+        } catch (error) {
+            console.error('Error fetching user history:', error);
+        } finally {
+            setLoadingHistory(false);
+        }
+    };
+
+    const fetchRecommendations = async () => {
+        setLoadingRecommendations(true);
+        try {
+            const response = await axiosInstance.get(`/product/recommend/${productId}`);
+            setRecommendations(response.data.recommended || []);
+        } catch (error) {
+            console.error('Error fetching recommendations:', error);
+        } finally {
+            setLoadingRecommendations(false);
+        }
+    };
+
+    const getImageUrl = (item) => {
+        if (item.image) {
+            return item.image;
+        }
+        if (item.imageUrl && item.imageUrl[0]) {
+            return item.imageUrl[0];
+        }
+        return null;
+    };
+
+    const handleProductClick = (productId) => {
+        navigate(`/product/${productId}`);
+    };
+
     useEffect(() => {
         fetchReviews();
     }, [productId]);
+
+    useEffect(() => {
+        fetchUserHistory();
+        fetchRecommendations();
+    }, [productId, isLoggedIn]);
 
     useEffect(() => {
         const fetchRatings = async () => {
@@ -93,13 +149,9 @@ const Product = () => {
         return <LoadingSpinner asOverlay />;
     }
 
-
-
     return (
         <div className=''>
-
             <div className="bg-white p-4 flex flex-col md:flex-row gap-10">
-
                 {error && <p className="text-red-500 text-center pb-4">{error}</p>} {/* Show operational errors */}
                 <div className='flex flex-col gap-4 md:sticky md:top-10 h-fit'>
                     <ProductImageGallery images={product.imageUrl} productId={productId} />
@@ -263,14 +315,86 @@ const Product = () => {
                                 Show All Reviews
                             </button>
                         </div>
-
-
                     </div>
                 </div>
             </div>
 
-            <div>
-                Similar Products
+            {/* User History Section - Only for logged in users */}
+            {isLoggedIn && userHistory.length > 0 && (
+                <div className="bg-gray-50 py-8">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Recently Viewed</h2>
+                        {loadingHistory ? (
+                            <LoadingSpinner centered />
+                        ) : (
+                            <div className="grid gap-4" style={{
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                                maxWidth: '100%'
+                            }}>
+                                {userHistory.map((item) => (
+                                    <div
+                                        key={item._id}
+                                        onClick={() => handleProductClick(item._id)}
+                                        className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow border border-gray-100"
+                                    >
+                                        <div className="aspect-square">
+                                            <img
+                                                src={getImageUrl(item) || placeholderImage}
+                                                alt="Product"
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                    if (e.target.src !== placeholderImage) {
+                                                        e.target.src = placeholderImage;
+                                                    }
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Product Recommendations Section - For all users */}
+            <div className="bg-white py-8">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">You Might Also Like</h2>
+                    {loadingRecommendations ? (
+                        <LoadingSpinner centered />
+                    ) : recommendations.length > 0 ? (
+                        <div className="grid gap-4" style={{
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                            maxWidth: '100%'
+                        }}>
+                            {recommendations.map((item) => (
+                                <div
+                                    key={item._id}
+                                    onClick={() => handleProductClick(item._id)}
+                                    className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow border border-gray-100"
+                                >
+                                    <div className="aspect-square">
+                                        <img
+                                            src={getImageUrl(item) || placeholderImage}
+                                            alt="Product"
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                                if (e.target.src !== placeholderImage) {
+                                                    e.target.src = placeholderImage;
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-8">
+                            <p className="text-gray-500">No recommendations available at the moment.</p>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

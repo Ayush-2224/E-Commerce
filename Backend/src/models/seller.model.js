@@ -28,6 +28,10 @@ const sellerSchema =mongoose.Schema({
      address:{
         type: String,
         required:true,
+     },
+     razorpayAccountId:{
+        type:String,
+        default:""
      }
 },{timestamps:true})
 
