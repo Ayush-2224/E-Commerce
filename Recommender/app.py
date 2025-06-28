@@ -40,7 +40,7 @@ def recommend_by_user(user_id):
         print(f"[DEBUG] Function entered with user_id={user_id}", flush=True)
         user_object_id = ObjectId(user_id)
 
-        docs = list(db.histories.find({"userId": user_object_id}, {"_id": 0, "productId": 1}))
+        docs = list(db.histories.find({"userId": user_object_id}, {"_id": 0, "productId": 1}).sort("createdAt", -1).limit(10))
         watched = [str(d["productId"]) for d in docs]
 
         if not watched:
