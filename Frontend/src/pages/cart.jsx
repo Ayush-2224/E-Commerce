@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUserAuthStore } from '../store/userAuth.store';
 
 const Cart = () => {
-    const { checkAuth, authUser } = useUserAuthStore()
+    const { checkAuth, authUser, isCheckingAuth } = useUserAuthStore()
     const isLoggedIn = !!authUser;
     const [cart, setCart] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -15,7 +15,11 @@ const Cart = () => {
     const navigate = useNavigate();
     const [totalPrice, setTotalPrice] = useState(0);
     const [totalMrp, setTotalMrp] = useState(0);
-    useEffect(() => { checkAuth() }, [checkAuth])
+
+    // Check authentication when component mounts
+    useEffect(() => { 
+        checkAuth() 
+    }, [checkAuth])
 
     const purchaseHandler = async () => {
         if (!cart || !cart.products || cart.products.length === 0) {
@@ -138,30 +142,34 @@ const Cart = () => {
         }
     };
 
-    // Effect to fetch the cart initially
+    // Effect to fetch the cart - wait for authentication check to complete
     useEffect(() => {
         const fetchCart = async () => {
+            // Don't fetch cart while still checking authentication
+            if (isCheckingAuth) return;
 
-        if (!isLoggedIn) {
-            const storedCart = JSON.parse(localStorage.getItem("cartItems"));
+            if (!isLoggedIn) {
+                const storedCart = JSON.parse(localStorage.getItem("cartItems")) || [];
 
-            if(storedCart.length > 0) {
-                setLoading(true);
-                setError(null); // Clear previous errors
-                try{
-                    const response = await axiosInstance.post("/cart/getProducts", { products: storedCart });
-                    setCart(response.data.cart || response.data);
-                }catch (err) {
-                    const errorMessage = err.response?.data?.message || "Failed to get cart";
-                    setError(errorMessage);
-                    toast.error(errorMessage);
-                }finally {
-                    setLoading(false);
+                if(storedCart.length > 0) {
+                    setLoading(true);
+                    setError(null); // Clear previous errors
+                    try{
+                        const response = await axiosInstance.post("/cart/getProducts", { products: storedCart });
+                        setCart(response.data.cart || response.data);
+                    }catch (err) {
+                        const errorMessage = err.response?.data?.message || "Failed to get cart";
+                        setError(errorMessage);
+                        toast.error(errorMessage);
+                    }finally {
+                        setLoading(false);
+                    }
+                } else {
+                    // No items in local storage
+                    setCart({ products: [] });
                 }
+                return;
             }
-
-            return;
-        }
 
             setLoading(true);
             setError(null); // Clear previous errors
@@ -177,7 +185,7 @@ const Cart = () => {
         };
 
         fetchCart();
-    }, []);
+    }, [isLoggedIn, isCheckingAuth]); // Add isCheckingAuth to dependencies
 
     useEffect(() => {
         if (cart && cart.products && cart.products.length > 0) {
@@ -193,12 +201,12 @@ const Cart = () => {
             setTotalMrp(newTotalMrp);
         } else {
             setTotalMrp(0);
-
             setTotalPrice(0); // Reset to 0 if cart is empty or not loaded
         }
     }, [cart]);
 
-    if (loading && !cart) { // Show initial loading spinner only if cart is not yet loaded
+    // Show loading spinner while checking authentication or loading cart
+    if (isCheckingAuth || (loading && !cart)) {
         return <LoadingSpinner asOverlay />;
     }
 

@@ -32,9 +32,15 @@ import { useEffect } from 'react';
 // import EditProduct from './pages/EditProduct';
 import BuyNowPage from './pages/BuyNowPage';
 import HomePage from './pages/home';
+
 function App() {
-  const authUser = useUserAuthStore((state) => state.authUser);
+  const { authUser, checkAuth } = useUserAuthStore();
   const isLoggedIn = !!authUser;
+
+  // Check authentication status when app loads
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -44,13 +50,12 @@ function App() {
     }
   }, [isLoggedIn]);
 
-
   return (
     <BrowserRouter>
     <Routes>
     <Route element={<NavPages/>}>
       <Route path='/cart' element={<Cart/>} />
-      <Route path="/product/:productId" element={<Product />} />
+      <Route path="product/:productId" element={<Product />} />
       <Route path="/search" element={<Search />} />
       <Route path='/user/orders' element={<Order/>} />
       <Route path="/buy/:productId" element={<BuyNowPage/>} />
