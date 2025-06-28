@@ -5,7 +5,8 @@ import generateTokenSeller from "../lib/seller.generateToken.js";
 
 const signup = async(req,res,next)=>{
     try {
-        const {username, password, email, address} = req.body;
+        const {username, password, email, address,razorpayAccountId} = req.body;
+        //console.log(req.body);
         if([email, username, password, address].some((field) =>
                 field?.trim() === "")
         ){
@@ -25,7 +26,8 @@ const signup = async(req,res,next)=>{
             email,
             password,
             profilePic: imageUrl,
-            address
+            address,
+            razorpayAccountId
         });
 
         if(!newSeller) return res.status(500).json({message: "Invalid Seller Data"});
