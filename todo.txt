@@ -1,11 +1,3 @@
-
-
-Profile edit  in auth and Seller 
-Add address in user model
-
-Mail after payment confirmation
-fix refund things and use hooks instead of using in direct code for updates
-
-
-check login and use checkauth
-old product not getting purchased
+Models
+Config
+Google login // see again

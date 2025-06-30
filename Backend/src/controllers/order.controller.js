@@ -12,7 +12,9 @@ const createOrderbyProductId = async (req, res, next) => {
 
 
   try {
-
+    if(!req.userData.address){
+      return next(new HttpError("Address not found Set it in profile", 404));
+    }
     const product = await Product.findById(productId);
 
     if (!product) {
@@ -184,6 +186,9 @@ const createOrderbyCartId = async (req, res, next) => {
   session.startTransaction();
 
   try {
+      if(!req.userData.address){
+        return next(new HttpError("Address not found Set it in profile", 404));
+      }
     const cart = await Cart.findOne({ userId }).session(session);
     if (!cart || cart.products.length === 0) {
       await session.abortTransaction();

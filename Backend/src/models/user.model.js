@@ -29,7 +29,6 @@ const userSchema =mongoose.Schema({
      },
      address:{
       type:String,
-      required:true,
       trim:true   
      }
 },{timestamps:true})

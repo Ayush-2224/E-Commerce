@@ -105,8 +105,7 @@ const checkAuth=async(req,res,next)=>{
     prompt: 'select_account',
   });
 
-  const clientURL = "http://localhost:5173";
-
+  const clientURL = process.env.Frontend_URL;
   const googleCallback = [
     passport.authenticate('google', {
       failureRedirect: `${clientURL}/user/signup`,
@@ -139,7 +138,7 @@ const checkAuth=async(req,res,next)=>{
  
      const JWT_SECRET = process.env.JWT_SECRET_USER;
      const token =jwt.sign({ email }, JWT_SECRET, { expiresIn: "15m" });
-     const resetURL = `http://localhost:5173/user/reset-password/${token}`;
+     const resetURL = `${process.env.Frontend_URL}/user/reset-password/${token}`;
  
      await transporter.sendMail({
          from: process.env.MAIL_USER,

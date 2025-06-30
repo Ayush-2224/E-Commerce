@@ -88,16 +88,20 @@ export const useUserAuthStore = create((set,get) => ({
   
   forgetPassword:async (email)=>{
        try {
-        const res=axiosInstance.post(`user/forget-password`,{email});
+        const res=await axiosInstance.post(`/user/forget-password`,{email});
+        return res;
        } catch (error) {
         console.log(error);
+        throw error;
        }
   },
   resetPassword: async(password,token)=>{
       try {
-        const res=axiosInstance.post('/user/reset-password',{password,token})
+        const res=await axiosInstance.post('/user/reset-password',{password,token})
+        return res;
       } catch (error) {
         console.log(error);
+        throw error;
       }
   }
 

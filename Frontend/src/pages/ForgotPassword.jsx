@@ -13,16 +13,17 @@ function ForgotPassword() {
     e.preventDefault();
 
     if (!email || !/\S+@\S+\.\S+/.test(email)) {
+      toast.error("Please enter a valid email address");
       return;
     }
 
     try {
       await forgetPassword(email);
       setEmail('');
-      toast.success("Email sent succcessfully")
+      toast.success("Email sent successfully");
     } catch (err) {
       console.log(err.message);
-        toast.success("Check Email and Try again")
+      toast.error("Failed to send email. Please check your email and try again");
     }
   };
 

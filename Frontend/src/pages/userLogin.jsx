@@ -131,9 +131,9 @@ export function UserLogin() {
                   </button>
                 </div>
                 <div className="flex justify-end mt-2">
-                  <a href="#" className="text-sm text-blue-600 hover:text-blue-800 transition-colors">
+                  <Link to="/user/forget-password" className="text-sm text-blue-600 hover:text-blue-800 transition-colors">
                     Forgot password?
-                  </a>
+                  </Link>
                 </div>
               </div>
   

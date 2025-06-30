@@ -180,10 +180,10 @@ useEffect(() => {
       </form>
       {/* Navigation Links */}
       <div className="mt-6 flex gap-6 text-blue-600 font-medium">
-        <Link to="/order" className="hover:underline">My Orders</Link>
+        <Link to="/user/orders" className="hover:underline">My Orders</Link>
         <Link to="/cart" className="hover:underline">My Cart</Link>
-        <Link to="/user-reviews" className="hover:underline">My Reviews & Ratings</Link>
-        <Link to="/forgot-password" className="hover:underline">Reset Pasword</Link>
+        <Link to="/user/reviews" className="hover:underline">My Reviews & Ratings</Link>
+        <Link to="/user/forget-password" className="hover:underline">Reset Password</Link>
       </div>
     </div>
   );

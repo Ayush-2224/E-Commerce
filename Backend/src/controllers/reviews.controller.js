@@ -16,7 +16,9 @@ const addReview = async (req, res, next) => {
         const {heading, review, rating} = req.body;
         const {productId} = req.params;
         const userId = req.userData._id;
-
+        if(!rating){
+            return next(new HttpError("Rating is required", 400));
+        }
         const existingReview = await Review.findOne({ productId, userId });
         
         if (existingReview) {
@@ -72,7 +74,7 @@ const getUserReviewForProduct = async (req, res, next) => {
     const {productId} = req.params
     try{
         const review = await Review.findOne({userId, productId})
-        console.log(review);
+        //console.log(review);
         
         res.status(201).json(review)
     }catch(error){
@@ -88,6 +90,9 @@ const changeReview = async (req, res, next) => {
         const {heading, review, rating} = req.body;
         const {productId} = req.params;
         const userId = req.userData._id;
+        if(!rating){
+            return next(new HttpError("Rating is required", 400));
+        }
         const updatedReview = await Review.findOneAndUpdate({productId, userId}, {
             heading,
             review,
