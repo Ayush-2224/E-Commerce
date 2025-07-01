@@ -3,7 +3,6 @@ import Cart from "../models/cart.model.js";
 import HttpError from "../models/http-error.js";
 import Product from "../models/product.model.js";
 import mongoose from "mongoose";
-import { generateCashfreeToken } from "./payment.controller.js";
 import razorpay from "../lib/razorpay.js";
 import crypto from 'crypto'
 import Payment from "../models/Payment.model.js";
@@ -100,7 +99,7 @@ const verifyAndConfirm = async (req, res, next) => {
         await Product.findByIdAndUpdate(product._id, {
           $inc: { quantity: -cartItem.quantity },
         }).session(session);
-        console.log(cartItem.quantity, "cartItem.quantity")
+        //console.log(cartItem.quantity, "cartItem.quantity")
         for (let i = 0; i < cartItem.quantity; i++) {
           const order = new Order({
             productId: product._id,

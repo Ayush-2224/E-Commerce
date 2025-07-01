@@ -55,7 +55,7 @@ const Cart = () => {
                     });
 
                     alert("Payment success! Order placed.");
-                    navigate("/order");
+                    navigate("/user/orders");
 
                 },
                 prefill: {

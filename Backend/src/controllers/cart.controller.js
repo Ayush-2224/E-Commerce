@@ -115,7 +115,7 @@ const getCart = async (req, res, next) => {
     const userId = req.userData._id;
     try {
         const cart = await fetfetchCartWithDetails(userId)
-    console.log(cart);
+   // console.log(cart);
         res.status(200).json(cart);
     } catch (error) {
         return next(new HttpError("Failed to get cart", 500));

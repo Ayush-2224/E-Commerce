@@ -10,12 +10,11 @@ export default function HomePage() {
   const { authUser } = useUserAuthStore();
   const isLoggedIn = !!authUser;
   const navigate = useNavigate();
-  
   const [userHistory, setUserHistory] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
   const [trendingProducts, setTrendingProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-
+ 
   const categories = [
     { name: "Electronics", icon: "📱", color: "bg-blue-100 text-blue-600" },
     { name: "Appliances", icon: "🏠", color: "bg-green-100 text-green-600" },

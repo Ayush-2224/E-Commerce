@@ -369,16 +369,7 @@ const searchProducts = async (req, res, next) => {
   }
 
   try {
-    //
-    // 1) Build a compound $search stage:
-    //    – A "phrase" clause (highest boost) for exact-order matches
-    //    – A "text" clause on title (with moderate fuzziness + a boost)
-    //    – A "text" clause on category (with lighter fuzziness + smaller boost)
-    //
-    // 2) Extract the searchScore into a "score" field
-    // 3) Sort by score descending
-    // 4) Skip/limit for pagination
-    //
+    
     let results = await Product.aggregate([
       {
         $search: {
@@ -484,12 +475,12 @@ const Recommendation = async (req, res) => {
   }
 };
 const RecommendationbyUserHistory = async (req, res) => {
-    console.log(1);
+   // console.log(1);
     const userId  = req.userData._id;
     try{
       const response = await axios.get(`http://localhost:5000/recommend/user/${userId}`);
       const  recommended  = response.data.recommended;
-      console.log(recommended);
+     // console.log(recommended);
       
     // 2. Fetch product details from MongoDB
    const products = await Product.find({ _id: { $in: recommended } })
@@ -504,7 +495,7 @@ const RecommendationbyUserHistory = async (req, res) => {
 
 const getTrendingProducts = async (req, res, next) => {
   try {
-    // Get products with some basic filtering for trending (you can enhance this logic)
+    // Get products with some basic filtering for trending 
     const products = await Product.find({ quantity: { $gt: 0 } })
       .sort({ createdAt: -1 }) // Most recent products
       .limit(6) // Get 6 products
@@ -519,23 +510,23 @@ const getTrendingProducts = async (req, res, next) => {
 };
 
 const getProductBreakdownStats = async (req, res, next) => {
-  console.log(1);
+ // console.log(1);
   const { productId } = req.params;
   const sellerId = req.sellerData._id;
   
   try {
     
-    console.log('Getting breakdown for productId:', productId, 'sellerId:', sellerId);
+   // console.log('Getting breakdown for productId:', productId, 'sellerId:', sellerId);
 
     const product = await Product.findOne({ _id: productId, seller: sellerId }).lean();
     if (!product) {
-      console.log('Product not found or not authorized');
+      //  console.log('Product not found or not authorized');
       return res.status(404).json({ message: "Product not found or not authorized" });
     }
 
-    console.log('Product found:', product.title);
+   // console.log('Product found:', product.title);
 
-    console.log('Product found:', product.title);
+   // console.log('Product found:', product.title);
 
     const [stats] = await Order.aggregate([
       { $match: { productId: { $in: [new mongoose.Types.ObjectId(productId)] } } },
@@ -570,7 +561,7 @@ const getProductBreakdownStats = async (req, res, next) => {
       }
     ]);
 
-    console.log('Aggregation result:', stats);
+    //console.log('Aggregation result:', stats);
 
     const {
       totalOrders = 0,
@@ -621,7 +612,7 @@ const getProductOrders = async (req, res, next) => {
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
 
-    console.log('Getting orders for productId:', productId, 'page:', page, 'limit:', limit);
+   // console.log('Getting orders for productId:', productId, 'page:', page, 'limit:', limit);
 
     // Confirm ownership
     const product = await Product.findOne({ _id: productId, seller: sellerId }).lean();
