@@ -11,7 +11,7 @@ const createOrderbyProductId = async (req, res, next) => {
 
 
   try {
-    if(!req.userData.address){
+    if (!req.userData.address) {
       return next(new HttpError("Address not found Set it in profile", 404));
     }
     const product = await Product.findById(productId);
@@ -50,7 +50,7 @@ const confirmOrder = async (price) => {
     return razorpayOrder;
   } catch (error) {
     console.error("Error confirming order:", error);
-   return new HttpError("Failed to confirm order", 500);
+    return new HttpError("Failed to confirm order", 500);
   }
 };
 
@@ -185,9 +185,9 @@ const createOrderbyCartId = async (req, res, next) => {
   session.startTransaction();
 
   try {
-      if(!req.userData.address){
-        return next(new HttpError("Address not found Set it in profile", 404));
-      }
+    if (!req.userData.address) {
+      return next(new HttpError("Address not found Set it in profile", 404));
+    }
     const cart = await Cart.findOne({ userId }).session(session);
     if (!cart || cart.products.length === 0) {
       await session.abortTransaction();
@@ -250,7 +250,7 @@ const getOrders = async (req, res, next) => {
         path: "productId",
         select: "title brand imageUrl"
       })
-      
+
     res.status(200).json({ orders });
   } catch (error) {
     return next(new HttpError("Failed to get orders", 500));

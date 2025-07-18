@@ -12,11 +12,11 @@ const PaymentSchema = mongoose.Schema({
     },
     sellerId:{
         type:mongoose.Schema.ObjectId,
-        ref:"User",
+        ref:"Seller",
     },
     orderId:{
         type:mongoose.Schema.ObjectId,
-        ref:"Product",
+        ref:"Order",
         required:true,
     },
     amount:{
